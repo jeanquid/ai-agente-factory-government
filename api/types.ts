@@ -46,3 +46,45 @@ export interface GeneratePromptResponse {
         createdAt: string;
     };
 }
+
+export type StepStatus = 'pending' | 'running' | 'completed' | 'failed';
+
+export interface RunStep {
+    step: number;
+    agentId: string;
+    status: StepStatus;
+    startedAt?: string;
+    finishedAt?: string;
+    driveFolderId?: string;
+    error?: string;
+    outputJson?: any;
+    summaryMarkdown?: string;
+}
+
+export interface Artifact {
+    step: number;
+    agentId: string;
+    name: string;
+    kind: 'input' | 'output' | 'summary' | 'audit' | 'run-state' | 'workflow' | 'final-report' | 'final-state';
+    driveFileId?: string;
+    createdAt: string;
+}
+
+export interface RunState {
+    runId: string;
+    tenantId: string;
+    mission: string;
+    createdAt: string;
+    workflow: {
+        order: string[];
+        currentStep: number;
+    };
+    steps: RunStep[];
+    artifacts: Artifact[];
+}
+
+export interface AgentOutput {
+    outputJson: any;
+    summaryMarkdown: string;
+    nextSuggestions: string[];
+}
