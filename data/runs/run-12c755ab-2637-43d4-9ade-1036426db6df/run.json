@@ -1,0 +1,24 @@
+{
+  "runId": "12c755ab-2637-43d4-9ade-1036426db6df",
+  "tenantId": "default",
+  "mission": "crea una app juridica",
+  "createdAt": "2026-02-14T04:31:34.629Z",
+  "status": "running",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina"
+    ],
+    "currentStep": 0
+  },
+  "steps": [],
+  "artifacts": [],
+  "driveIds": {
+    "runFolderId": "data/runs/run-12c755ab-2637-43d4-9ade-1036426db6df",
+    "stepsFolderId": "data/runs/run-12c755ab-2637-43d4-9ade-1036426db6df/steps",
+    "finalFolderId": "data/runs/run-12c755ab-2637-43d4-9ade-1036426db6df/final"
+  }
+}
