@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { agents } from '../api/data';
+import { agents } from '../api/_data';
 import { AgentProfile, RunState, RunStep } from '../api/types';
 import {
     Play,
