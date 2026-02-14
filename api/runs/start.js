@@ -42,10 +42,26 @@ export default async function handler(req, res) {
             }
         } else {
             console.log(`[${runId}] Using Configured Root Folder ID: ${rootFolderId}`);
+            try {
+                // Verify access by trying to create the tenant folder
+                // This will fail fast if permissions are wrong
+            } catch (e) {
+                // Actually this block is just a log, the error will be caught below at tenant creation
+            }
         }
 
         // 2. Create Tenant Folder
-        const tenantFolderId = await findOrCreateFolder(`tenant-${tenantId}`, rootFolderId);
+        let tenantFolderId;
+        try {
+            tenantFolderId = await findOrCreateFolder(`tenant-${tenantId}`, rootFolderId);
+        } catch (e) {
+            console.error(`FATAL: Failed to access/create tenant folder inside Root ID '${rootFolderId}':`, e.message);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            return res.end(JSON.stringify({
+                error: `Access Denied to Root Folder '${rootFolderId}'. Did you share it with 'nodo8-consultancy@mi-app-1-487222.iam.gserviceaccount.com' as EDITOR? Error: ${e.message}`
+            }));
+        }
 
         // 3. Create Runs Folder
         const runsFolderId = await findOrCreateFolder('runs', tenantFolderId);
