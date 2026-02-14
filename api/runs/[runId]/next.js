@@ -58,16 +58,11 @@ export default async function handler(req, res) {
         }
 
         // Save Artifacts
-        const stepsFolderId = await findRunFolder(runId) // Re-fetch or cache?
-            .then(id => findOrCreateFolder('steps', id));
-        // Logic fix: stepsFolderId might be cached in runState.driveIds but let's re-fetch safely
-
-        // Wait, 'stepsFolderId' was not reliably fetched above in the JS conversion logic.
-        // Let's reuse findOrCreateFolder logic to ensure it exists inside runFolder.
-        const stepsFolderIdReal = await findOrCreateFolder('steps', runFolderId);
+        // Reuse runFolderId to find or create 'steps'
+        const stepsFolderId = await findOrCreateFolder('steps', runFolderId);
 
         const stepFolderName = `${String(stepNumber).padStart(2, '0')}-${agentId}`;
-        const stepFolderId = await findOrCreateFolder(stepFolderName, stepsFolderIdReal);
+        const stepFolderId = await findOrCreateFolder(stepFolderName, stepsFolderId);
 
         await uploadOrUpdateTextFile(stepFolderId, 'input.json', JSON.stringify({
             mission: runState.mission,
