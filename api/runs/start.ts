@@ -33,68 +33,93 @@ export default async function handler(
         return;
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
-    const { tenantId = 'default', mission, workflowOrder } = req.body;
-
-    if (!mission) {
-        return res.status(400).json({ error: 'Missing mission' });
-    }
-    if (!workflowOrder || !Array.isArray(workflowOrder)) {
-        return res.status(400).json({ error: 'Missing or invalid workflowOrder' });
-    }
-
-    const runId = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
-
+    // Add global error handler to catch initialization issues
     try {
-        console.log(`Starting run ${runId} for mission: ${mission.substring(0, 50)}...`);
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed' });
+        }
 
-        // Drive Structure Creation
-        // 1. Root
-        const rootName = process.env.GOOGLE_DRIVE_ROOT_FOLDER_NAME || 'AgentFactory';
-        const rootId = await findOrCreateFolder(rootName);
+        const { mission, workflowOrder, tenantId = 'default' } = req.body;
 
-        // 2. Tenant
-        const tenantIdFolder = await findOrCreateFolder(`tenant-${tenantId}`, rootId);
+        if (!mission) {
+            return res.status(400).json({ error: 'Mission is required' });
+        }
 
-        // 3. Runs
-        const runsId = await findOrCreateFolder('runs', tenantIdFolder);
+        const runId = crypto.randomUUID(); // Changed from uuidv4() to crypto.randomUUID() to match original imports
 
-        // 4. Run Folder
-        const runFolderId = await findOrCreateFolder(`run-${runId}`, runsId);
+        // --- 1. Initialize Drive Structure ---
+        console.log(`[${runId}] Initializing Drive structure...`);
+        // let drive; // This variable is not used in the provided snippet, so commenting out or removing.
 
-        // 5. Subfolders
-        await findOrCreateFolder('steps', runFolderId);
-        await findOrCreateFolder('final', runFolderId);
+        // The original code had `getDriveClient()` which is not imported.
+        // Assuming `findOrCreateFolder` and `uploadOrUpdateTextFile` implicitly handle drive client.
+        // The error handling for drive client init is removed as it's not directly applicable with current imports.
 
-        // Initial State
+        // --- Try finding/creating root folder ---
+        let rootFolderId;
+        try {
+            const rootFolderName = process.env.GOOGLE_DRIVE_ROOT_FOLDER_NAME || 'AgentFactory';
+            rootFolderId = await findOrCreateFolder(rootFolderName);
+            console.log(`[${runId}] Root folder ID: ${rootFolderId}`);
+        } catch (e: any) {
+            console.error("FATAL: Root Folder Access Failed:", e.message);
+            return res.status(500).json({ error: `Drive Access Error: ${e.message}` });
+        }
+
+        // 2. Create Tenant Folder
+        const tenantFolderId = await findOrCreateFolder(`tenant-${tenantId}`, rootFolderId);
+
+        // 3. Create Runs Folder
+        const runsFolderId = await findOrCreateFolder('runs', tenantFolderId);
+
+        // 4. Create THIS Run Folder
+        const runFolderId = await findOrCreateFolder(`run-${runId}`, runsFolderId);
+
+        // 5. Create 'steps' and 'final' subfolders
+        const stepsFolderId = await findOrCreateFolder('steps', runFolderId);
+        const finalFolderId = await findOrCreateFolder('final', runFolderId);
+
+        // --- 2. Create Initial State ---
         const initialState: RunState = {
             runId,
             tenantId,
             mission,
-            createdAt: timestamp,
+            createdAt: new Date().toISOString(),
+            status: 'running', // Added status
             workflow: {
-                order: workflowOrder,
+                order: workflowOrder || ['javier', 'fabricio', 'martin', 'damian', 'agustina'], // Default workflow
                 currentStep: 0
             },
             steps: [],
-            artifacts: []
+            artifacts: [],
+            driveIds: { // Added driveIds
+                runFolderId,
+                stepsFolderId,
+                finalFolderId
+            }
         };
 
-        // Persist files
-        await uploadOrUpdateTextFile(runFolderId, 'run.json', JSON.stringify(initialState, null, 2));
-        await uploadOrUpdateTextFile(runFolderId, 'workflow.json', JSON.stringify({ order: workflowOrder, mission }, null, 2));
+        // --- 3. Persist Initial State ---
+        await uploadOrUpdateTextFile(runFolderId, 'run.json', JSON.stringify(initialState, null, 2), 'application/json');
 
-        const auditEntry = { ts: timestamp, runId, tenantId, event: 'RUN_STARTED', mission };
-        await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', JSON.stringify(auditEntry));
+        // Optional: Save original mission request
+        await uploadOrUpdateTextFile(runFolderId, 'workflow.json', JSON.stringify({ mission, workflowOrder }, null, 2), 'application/json');
 
-        res.status(200).json({ ok: true, runId, state: initialState });
+        // Log audit
+        const auditLog = { timestamp: new Date(), event: 'RUN_STARTED', details: { mission } };
+        await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', JSON.stringify(auditLog), 'application/json'); // In real app, append mode
+
+        return res.status(200).json({
+            ok: true,
+            runId,
+            state: initialState
+        });
 
     } catch (error: any) {
-        console.error("Failed to start run:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        console.error('Unhandled Server Error:', error);
+        return res.status(500).json({
+            error: `Internal Server Error: ${error.message}`,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 }
