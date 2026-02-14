@@ -2,7 +2,7 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# AI Agent Factory - v3.1 (Manual Flow + In-Memory)
+# AI Agent Factory - v3.1 (Manual Flow + In-Memory) - Trigger Deploy
 
 This version implements a **manual "Read & Continue" workflow** where each step produces concrete deliverables (JSON, Summary, Todo) and a downloadable PDF report.
 
