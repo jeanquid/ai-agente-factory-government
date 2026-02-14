@@ -13,14 +13,22 @@ async function getDriveClient() {
 
     let credentials;
     try {
-        // Attempt to parse directly
-        credentials = JSON.parse(credentialsJson);
+        // Clean up the JSON string to be extremely robust against copy-paste errors
+        let cleanJson = credentialsJson.trim();
 
-        // Fix private_key if it has escaped newlines incorrectly handled
+        // Remove potential wrapping quotes (single or double) if they exist at extremes
+        if ((cleanJson.startsWith("'") && cleanJson.endsWith("'")) ||
+            (cleanJson.startsWith('"') && cleanJson.endsWith('"'))) {
+            cleanJson = cleanJson.substring(1, cleanJson.length - 1);
+        }
+
+        // Attempt to parse
+        credentials = JSON.parse(cleanJson);
+
+        // Fix private_key unescaping if needed
         if (credentials.private_key) {
             credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
         }
-
     } catch (e: any) {
         console.error("CRITICAL ERROR: Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON. Content might be malformed.", e.message);
         // Log first few chars to debug (safe-ish)
