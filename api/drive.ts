@@ -5,26 +5,39 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
 async function getDriveClient() {
     const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+
     if (!credentialsJson) {
-        console.error("Missing GOOGLE_SERVICE_ACCOUNT_JSON environment variable");
-        throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON");
+        console.error("CRITICAL ERROR: GOOGLE_SERVICE_ACCOUNT_JSON environment variable is missing.");
+        throw new Error("Server configuration error: Missing Google Credentials.");
     }
 
-    // Handle escaped newlines in private key if present in string
     let credentials;
     try {
+        // Attempt to parse directly
         credentials = JSON.parse(credentialsJson);
-    } catch (e) {
-        console.error("Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON", e);
-        throw new Error("Invalid GOOGLE_SERVICE_ACCOUNT_JSON");
+
+        // Fix private_key if it has escaped newlines incorrectly handled
+        if (credentials.private_key) {
+            credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+        }
+
+    } catch (e: any) {
+        console.error("CRITICAL ERROR: Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON. Content might be malformed.", e.message);
+        // Log first few chars to debug (safe-ish)
+        console.error("JSON Start Snippet:", credentialsJson.substring(0, 20));
+        throw new Error("Server configuration error: Invalid Google Credentials JSON.");
     }
 
-    const auth = new google.auth.GoogleAuth({
-        credentials,
-        scopes: SCOPES,
-    });
-
-    return google.drive({ version: 'v3', auth });
+    try {
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: SCOPES,
+        });
+        return google.drive({ version: 'v3', auth });
+    } catch (e: any) {
+        console.error("CRITICAL ERROR: GoogleAuth initialization failed.", e.message);
+        throw new Error("Authentication failed with Google services.");
+    }
 }
 
 export async function findOrCreateFolder(name: string, parentId?: string): Promise<string> {
