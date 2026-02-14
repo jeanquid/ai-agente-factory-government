@@ -12,7 +12,8 @@ export async function executeAgent(agentId, runState, previousSteps) {
     // Use gemini-1.5-flash for speed and cost, or pro for reasoning
     const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
-        generationConfig: { responseMimeType: "application/json" }
+        // Remove strict JSON mode to avoid API incompatibility issues with current SDK version
+        // generationConfig: { responseMimeType: "application/json" }
     });
 
     // Construct context from previous steps to inform the current agent
@@ -54,11 +55,23 @@ export async function executeAgent(agentId, runState, previousSteps) {
         if (!text) throw new Error("No content generated");
 
         // Clean up markdown code blocks if the model ignored instructions
+        // Robust JSON extraction
         let jsonText = text.trim();
-        if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.replace(/^```json/, '').replace(/```$/, '');
-        } else if (jsonText.startsWith('```')) {
-            jsonText = jsonText.replace(/^```/, '').replace(/```$/, '');
+
+        // Find the first '{' and last '}' to extract the JSON object
+        const firstBrace = jsonText.indexOf('{');
+        const lastBrace = jsonText.lastIndexOf('}');
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            jsonText = jsonText.substring(firstBrace, lastBrace + 1);
+        } else {
+            // Fallback: If no braces found, maybe it's raw text or Markdown,
+            // try cleaning up code blocks just in case
+            if (jsonText.startsWith('```json')) {
+                jsonText = jsonText.replace(/^```json/, '').replace(/```$/, '');
+            } else if (jsonText.startsWith('```')) {
+                jsonText = jsonText.replace(/^```/, '').replace(/```$/, '');
+            }
         }
 
         const parsed = JSON.parse(jsonText);
