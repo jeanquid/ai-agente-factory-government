@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { agents } from './data.js';
+import { agents } from './_data.js';
 
 // Configuration
 const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";

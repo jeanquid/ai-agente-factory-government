@@ -1,4 +1,4 @@
-import { findRunFolder, downloadTextFile, findFileByName } from '../../github-storage.js';
+import { findRunFolder, downloadTextFile, findFileByName } from '../../_github-storage.js';
 
 export default async function handler(req, res) {
     console.log("DEBUG: Loading run index... (GitHub version)");

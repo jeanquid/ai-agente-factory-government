@@ -1,5 +1,5 @@
-import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../github-storage.js';
-import { executeAgent } from '../../agent-runner.js';
+import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../_github-storage.js';
+import { executeAgent } from '../../_agent-runner.js';
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', "true");
