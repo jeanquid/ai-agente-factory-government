@@ -1,15 +1,18 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { agents } from './_data.js';
 
-// Configuration
-const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-// List of fallbacks to try in order
+// Configuration: Updated for 2025-2026 Model Support
+// Primary model target: Gemini 2.5 Flash
+const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
+// List of fallbacks to try in order.
+// We prioritize the 2.5 series, then 2.0, and keep 1.5/1.0 as last resorts if still available/supported.
 const FALLBACK_MODELS = [
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-flash-001",
-    "gemini-1.0-pro",
-    "gemini-pro",
-    "gemini-1.0-pro-latest"
+    "gemini-2.5-pro",      // Powerful fallback
+    "gemini-2.5-flash-latest", // Alias check
+    "gemini-2.0-flash",    // Previous stable flash
+    "gemini-1.5-flash",    // Deprecated but might work for legacy keys
+    "gemini-pro"           // Legacy stable
 ];
 
 /**
@@ -20,6 +23,7 @@ async function generateWithFallback(genAI, systemPrompt) {
     const tryModel = async (modelName) => {
         console.log(`[Gemini] Attempting generation with model: ${modelName}`);
         try {
+            // SDK v0.12.0+ handles API versioning, but we default to what the SDK uses (usually v1beta for newer models)
             const model = genAI.getGenerativeModel({ model: modelName });
             const result = await model.generateContent(systemPrompt);
             const response = await result.response;
@@ -56,9 +60,7 @@ async function generateWithFallback(genAI, systemPrompt) {
             } catch (fbErr) {
                 console.warn(`[Gemini] Fallback '${fallbackModel}' failed.`);
                 lastError = fbErr;
-                // If this error is NOT a 404, we might want to stop trying? 
-                // No, keep trying other models just in case.
-                continue;
+                // Continue to next fallback...
             }
         }
 
@@ -81,7 +83,8 @@ export async function executeAgent(agentId, runState, previousSteps) {
         agentId: step.agentId,
         role: agents.find(a => a.id === step.agentId)?.role,
         output: step.outputJson,
-        summary: step.summaryMarkdown
+        summary: step.summaryMarkdown,
+        nextSuggestions: step.nextSuggestions
     }));
 
     const systemPrompt = `

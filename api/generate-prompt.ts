@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { agents, governanceRules as defaultRules } from './data';
+import { agents, governanceRules as defaultRules } from './_data';
 import { GeneratePromptRequest, GeneratePromptResponse } from './types';
 import { IncomingMessage, ServerResponse } from 'http';
 
@@ -115,7 +115,7 @@ export default async function handler(
       ${JSON.stringify(rulesToUse, null, 2)}
     `;
 
-        const modelName = 'gemini-2.5-flash-latest';
+        const modelName = 'gemini-2.5-flash';
 
         // Call Gemini API
         const response = await ai.models.generateContent({
