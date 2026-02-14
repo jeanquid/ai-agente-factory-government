@@ -1,4 +1,4 @@
-import { RunState, RunStep } from './types';
+import { RunState, RunStep } from './types.ts';
 import { v4 as uuidv4 } from 'uuid';
 
 // Singleton in-memory store

@@ -1,4 +1,4 @@
-import { createRun } from '../../_store';
+import { createRun } from '../_store.ts';
 import { IncomingMessage, ServerResponse } from 'http';
 
 interface VercelRequest extends IncomingMessage {

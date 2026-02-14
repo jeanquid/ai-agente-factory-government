@@ -1,5 +1,5 @@
-import { updateRun, getRun } from '../../../../../_store';
-import { executeAgent } from '../../../../../_agent-runner.js';
+import { updateRun, getRun } from '../../../../_store.ts';
+import { executeAgent } from '../../../../_agent-runner.js';
 import { IncomingMessage, ServerResponse } from 'http';
 
 interface VercelRequest extends IncomingMessage {

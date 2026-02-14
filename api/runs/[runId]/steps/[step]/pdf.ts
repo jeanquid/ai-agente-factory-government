@@ -1,5 +1,5 @@
-import { getRun } from '../../../../../_store';
-import { generateStepPDF } from '../../../../../_pdf-generator';
+import { getRun } from '../../../../_store.ts';
+import { generateStepPDF } from '../../../../_pdf-generator.ts';
 import { IncomingMessage, ServerResponse } from 'http';
 
 interface VercelRequest extends IncomingMessage {
