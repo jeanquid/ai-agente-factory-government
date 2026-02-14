@@ -1,9 +1,9 @@
-import { findOrCreateFolder, uploadOrUpdateTextFile } from '../drive.js';
+import { findOrCreateFolder, uploadOrUpdateTextFile } from '../github-storage.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {
     try {
-        console.log("DEBUG: /api/runs/start called (JS version)");
+        console.log("DEBUG: /api/runs/start called (GitHub version)");
 
         if (req.method !== 'POST') {
             res.statusCode = 405;
@@ -23,58 +23,13 @@ export default async function handler(req, res) {
         const runId = uuidv4();
         console.log(`DEBUG: Generated RunID: ${runId}`);
 
-        // --- 1. Initialize Drive Structure ---
-        console.log(`[${runId}] Initializing Drive structure...`);
+        // --- 1. Define GitHub Paths ---
+        // GitHub Storage Logic: data/runs/run-{id}/
+        const runFolder = `data/runs/run-${runId}`;
+        const stepsFolder = `${runFolder}/steps`;
+        const finalFolder = `${runFolder}/final`;
 
-        let rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
-        console.log(`[${runId}] ENV Check: GOOGLE_DRIVE_ROOT_FOLDER_ID is '${rootFolderId}'`);
-
-
-
-        if (!rootFolderId) {
-            console.log("No GOOGLE_DRIVE_ROOT_FOLDER_ID provided, attempting to find/create by name...");
-            try {
-                const rootFolderName = process.env.GOOGLE_DRIVE_ROOT_FOLDER_NAME || 'AgentFactory';
-                rootFolderId = await findOrCreateFolder(rootFolderName);
-                console.log(`[${runId}] Root folder ID found/created: ${rootFolderId}`);
-            } catch (e) {
-                console.error("FATAL: Root Folder Access Failed:", e.message);
-                res.statusCode = 500;
-                res.setHeader('Content-Type', 'application/json');
-                return res.end(JSON.stringify({ error: `Drive Access Error: ${e.message}. Quota issues? Share a folder with the SA and set GOOGLE_DRIVE_ROOT_FOLDER_ID.` }));
-            }
-        } else {
-            console.log(`[${runId}] Using Configured Root Folder ID: ${rootFolderId}`);
-            try {
-                // Verify access by trying to create the tenant folder
-                // This will fail fast if permissions are wrong
-            } catch (e) {
-                // Actually this block is just a log, the error will be caught below at tenant creation
-            }
-        }
-
-        // 2. Create Tenant Folder
-        let tenantFolderId;
-        try {
-            tenantFolderId = await findOrCreateFolder(`tenant-${tenantId}`, rootFolderId);
-        } catch (e) {
-            console.error(`FATAL: Failed to access/create tenant folder inside Root ID '${rootFolderId}':`, e.message);
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'application/json');
-            return res.end(JSON.stringify({
-                error: `Access Denied to Root Folder '${rootFolderId}'. Did you share it with 'nodo8-consultancy@mi-app-1-487222.iam.gserviceaccount.com' as EDITOR? Error: ${e.message}`
-            }));
-        }
-
-        // 3. Create Runs Folder
-        const runsFolderId = await findOrCreateFolder('runs', tenantFolderId);
-
-        // 4. Create THIS Run Folder
-        const runFolderId = await findOrCreateFolder(`run-${runId}`, runsFolderId);
-
-        // 5. Create 'steps' and 'final' subfolders
-        const stepsFolderId = await findOrCreateFolder('steps', runFolderId);
-        const finalFolderId = await findOrCreateFolder('final', runFolderId);
+        console.log(`[${runId}] Creating Run Folder Structure at: ${runFolder}`);
 
         // --- 2. Create Initial State ---
         const initialState = {
@@ -89,22 +44,28 @@ export default async function handler(req, res) {
             },
             steps: [],
             artifacts: [],
+            // In GitHub, IDs are Paths.
             driveIds: {
-                runFolderId,
-                stepsFolderId,
-                finalFolderId
+                runFolderId: runFolder, // Path string
+                stepsFolderId: stepsFolder,
+                finalFolderId: finalFolder
             }
         };
 
         // --- 3. Persist Initial State ---
-        await uploadOrUpdateTextFile(runFolderId, 'run.json', JSON.stringify(initialState, null, 2), 'application/json');
+        // Save run.json (this actually creates the folder implicitly in GitHub)
+        // Note: github-storage expects (folderPath, filename, content)
+        // OR we can pass full path. 
+        // Our github-storage.js: uploadOrUpdateTextFile(folderPath, filename, content)
+
+        await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(initialState, null, 2));
 
         // Optional: Save original mission request
-        await uploadOrUpdateTextFile(runFolderId, 'workflow.json', JSON.stringify({ mission, workflowOrder }, null, 2), 'application/json');
+        await uploadOrUpdateTextFile(runFolder, 'workflow.json', JSON.stringify({ mission, workflowOrder }, null, 2));
 
-        // Log audit
+        // Log run start to audit
         const auditLog = { timestamp: new Date(), event: 'RUN_STARTED', details: { mission } };
-        await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', JSON.stringify(auditLog), 'application/json');
+        await uploadOrUpdateTextFile(runFolder, 'audit.jsonl', JSON.stringify(auditLog)); // First line
 
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -115,7 +76,7 @@ export default async function handler(req, res) {
         }));
 
     } catch (error) {
-        console.error('Unhandled Server Error:', error);
+        console.error('Unhandled Server Error (GitHub):', error);
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
         return res.end(JSON.stringify({

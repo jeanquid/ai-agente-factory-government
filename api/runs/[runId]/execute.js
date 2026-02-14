@@ -1,4 +1,4 @@
-import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../drive.js';
+import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../github-storage.js';
 import { executeAgent } from '../../agent-runner.js';
 
 export default async function handler(req, res) {
@@ -15,13 +15,13 @@ export default async function handler(req, res) {
     if (!runId) return res.status(400).json({ error: 'Missing runId' });
 
     try {
-        const runFolderId = await findRunFolder(runId);
-        if (!runFolderId) return res.status(404).json({ error: 'Run not found' });
+        const runFolder = await findRunFolder(runId); // "data/runs/run-{id}"
+        if (!runFolder) return res.status(404).json({ error: 'Run not found' });
 
-        const runJsonFileId = await findFileByName(runFolderId, 'run.json');
-        if (!runJsonFileId) return res.status(500).json({ error: 'Corrupted run: run.json missing' });
+        const runJsonPath = await findFileByName(runFolder, 'run.json');
+        if (!runJsonPath) return res.status(500).json({ error: 'Corrupted run: run.json missing' });
 
-        const runJsonContent = await downloadTextFile(runJsonFileId);
+        const runJsonContent = await downloadTextFile(runJsonPath);
         let runState = JSON.parse(runJsonContent);
 
         const totalSteps = runState.workflow.order.length;
@@ -34,15 +34,15 @@ export default async function handler(req, res) {
         const agentId = runState.workflow.order[currentStepIndex];
         const stepNumber = currentStepIndex + 1;
 
-        // Audit: STEP_STARTED
+        // Audit: Append logic (DL -> Append -> UL)
         let auditContent = "";
-        const auditFileId = await findFileByName(runFolderId, 'audit.jsonl');
-        if (auditFileId) {
-            auditContent = await downloadTextFile(auditFileId);
+        const auditPath = await findFileByName(runFolder, 'audit.jsonl');
+        if (auditPath) {
+            try { auditContent = await downloadTextFile(auditPath); } catch (e) { }
         }
         const auditEntry = { ts: new Date().toISOString(), runId, tenantId: runState.tenantId, event: 'STEP_STARTED', step: stepNumber, agentId };
         auditContent += JSON.stringify(auditEntry) + '\n';
-        await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', auditContent);
+        await uploadOrUpdateTextFile(runFolder, 'audit.jsonl', auditContent);
 
         // Execute Agent
         console.log(`Executing Agent ${agentId} (Step ${stepNumber})`);
@@ -53,26 +53,25 @@ export default async function handler(req, res) {
         } catch (e) {
             // Log failure
             auditContent += JSON.stringify({ ts: new Date().toISOString(), event: 'STEP_FAILED', error: e.message }) + '\n';
-            await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', auditContent);
+            await uploadOrUpdateTextFile(runFolder, 'audit.jsonl', auditContent);
             throw e;
         }
 
-        // Save Artifacts
-        // Reuse runFolderId to find or create 'steps'
-        const stepsFolderId = await findOrCreateFolder('steps', runFolderId);
-
+        // Save Artifacts to GitHub
+        // Use path strings: "data/runs/run-{id}/steps"
+        const stepsFolder = await findOrCreateFolder('steps', runFolder);
         const stepFolderName = `${String(stepNumber).padStart(2, '0')}-${agentId}`;
-        const stepFolderId = await findOrCreateFolder(stepFolderName, stepsFolderId);
+        const stepFolder = await findOrCreateFolder(stepFolderName, stepsFolder);
 
-        await uploadOrUpdateTextFile(stepFolderId, 'input.json', JSON.stringify({
+        await uploadOrUpdateTextFile(stepFolder, 'input.json', JSON.stringify({
             mission: runState.mission,
             context: runState.steps.map(s => ({ agent: s.agentId, output: s.outputJson }))
         }, null, 2));
 
         if (result.outputJson) {
-            await uploadOrUpdateTextFile(stepFolderId, 'output.json', JSON.stringify(result.outputJson, null, 2));
+            await uploadOrUpdateTextFile(stepFolder, 'output.json', JSON.stringify(result.outputJson, null, 2));
         }
-        await uploadOrUpdateTextFile(stepFolderId, 'summary.md', result.summaryMarkdown || "");
+        await uploadOrUpdateTextFile(stepFolder, 'summary.md', result.summaryMarkdown || "");
 
         // Update State
         const newStep = {
@@ -82,7 +81,7 @@ export default async function handler(req, res) {
             finishedAt: new Date().toISOString(),
             outputJson: result.outputJson,
             summaryMarkdown: result.summaryMarkdown,
-            driveFolderId: stepFolderId
+            driveFolderId: stepFolder // This is now a path string in GitHub
         };
 
         runState.steps.push(newStep);
@@ -105,23 +104,24 @@ export default async function handler(req, res) {
 
         // Check Completion
         if (runState.workflow.currentStep >= totalSteps) {
-            const finalFolderId = await findOrCreateFolder('final', runFolderId);
+            const finalFolder = await findOrCreateFolder('final', runFolder);
 
             const finalReport = `# Final Mission Report: ${runState.mission}\n\n` +
                 runState.steps.map(s => `## Step ${s.step}: ${s.agentId}\n${s.summaryMarkdown}`).join('\n\n');
 
-            await uploadOrUpdateTextFile(finalFolderId, 'final_report.md', finalReport, 'text/markdown');
-            await uploadOrUpdateTextFile(finalFolderId, 'final_state.json', JSON.stringify(runState, null, 2));
+            await uploadOrUpdateTextFile(finalFolder, 'final_report.md', finalReport); // MD
+            await uploadOrUpdateTextFile(finalFolder, 'final_state.json', JSON.stringify(runState, null, 2));
 
             auditContent += JSON.stringify({ ts: new Date().toISOString(), event: 'RUN_FINISHED' }) + '\n';
-            await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', auditContent);
+            await uploadOrUpdateTextFile(runFolder, 'audit.jsonl', auditContent);
         } else {
             // Update audit with done
             auditContent += JSON.stringify({ ts: new Date().toISOString(), event: 'STEP_DONE', step: stepNumber, agentId }) + '\n';
-            await uploadOrUpdateTextFile(runFolderId, 'audit.jsonl', auditContent);
+            await uploadOrUpdateTextFile(runFolder, 'audit.jsonl', auditContent);
         }
 
-        await uploadOrUpdateTextFile(runFolderId, 'run.json', JSON.stringify(runState, null, 2));
+        // Save updated RUN.JSON
+        await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(runState, null, 2));
 
         res.status(200).json({ ok: true, state: runState, stepResult: result });
 

@@ -1,7 +1,7 @@
-import { findRunFolder, downloadTextFile, findFileByName } from '../../drive.js';
+import { findRunFolder, downloadTextFile, findFileByName } from '../../github-storage.js';
 
 export default async function handler(req, res) {
-    console.log("DEBUG: Loading run index...");
+    console.log("DEBUG: Loading run index... (GitHub version)");
     res.setHeader('Access-Control-Allow-Credentials', "true");
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -15,13 +15,15 @@ export default async function handler(req, res) {
     if (!runId) return res.status(400).json({ error: 'Missing runId' });
 
     try {
-        const runFolderId = await findRunFolder(runId);
-        if (!runFolderId) return res.status(404).json({ error: 'Run not found' });
+        // findRunFolder returns the path "data/runs/run-{id}"
+        const runFolderPath = await findRunFolder(runId);
+        if (!runFolderPath) return res.status(404).json({ error: 'Run not found' });
 
-        const runJsonFileId = await findFileByName(runFolderId, 'run.json');
-        if (!runJsonFileId) return res.status(500).json({ error: 'Corrupted run: run.json missing' });
+        // findFileByName returns full path "data/runs/run-{id}/run.json"
+        const runJsonPath = await findFileByName(runFolderPath, 'run.json');
+        if (!runJsonPath) return res.status(500).json({ error: 'Corrupted run: run.json missing' });
 
-        const runJsonContent = await downloadTextFile(runJsonFileId);
+        const runJsonContent = await downloadTextFile(runJsonPath);
         const runState = JSON.parse(runJsonContent);
 
         res.status(200).json(runState);
