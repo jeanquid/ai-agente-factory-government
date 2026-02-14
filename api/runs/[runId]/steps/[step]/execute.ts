@@ -1,4 +1,4 @@
-import { updateRun, getRun } from '../../../../_store.ts';
+import { updateRun, getRun } from '../../../../_store.js';
 import { executeAgent } from '../../../../_agent-runner.js';
 import { IncomingMessage, ServerResponse } from 'http';
 
