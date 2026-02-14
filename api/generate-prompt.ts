@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { agents, governanceRules as defaultRules } from './_data';
 import { GeneratePromptRequest, GeneratePromptResponse } from './types';
 import { IncomingMessage, ServerResponse } from 'http';
@@ -72,7 +72,7 @@ export default async function handler(
             return res.status(500).json({ ok: false, error: 'Server configuration error: Missing API Key' });
         }
 
-        const ai = new GoogleGenAI({ apiKey });
+        const genAI = new GoogleGenerativeAI(apiKey);
 
         const effectiveMission = mission || agent.mission;
 
@@ -116,14 +116,13 @@ export default async function handler(
     `;
 
         const modelName = 'gemini-2.5-flash';
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         // Call Gemini API
-        const response = await ai.models.generateContent({
-            model: modelName,
-            contents: systemInstruction, // Using string as per existing pattern
-        });
-
-        const text = response.text; // Accessing text property as per existing pattern
+        const result = await model.generateContent(systemInstruction);
+        const response = await result.response;
+        // Text is a method or property depending on version, usually .text()
+        const text = response.text();
 
         if (!text) {
             throw new Error("No text generated from Gemini");

@@ -1,8 +1,10 @@
 
 import { IncomingMessage, ServerResponse } from 'http';
-import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../drive';
+// @ts-ignore
+import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../_github-storage.js';
 import { RunState, RunStep } from '../../types';
-import { executeAgent } from '../../agent-runner';
+// @ts-ignore
+import { executeAgent } from '../../_agent-runner.js';
 
 interface VercelRequest extends IncomingMessage {
     body: any;

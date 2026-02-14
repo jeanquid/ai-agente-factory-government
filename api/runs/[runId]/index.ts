@@ -1,6 +1,6 @@
 
 import { IncomingMessage, ServerResponse } from 'http';
-import { findRunFolder, downloadTextFile, findFileByName } from '../../drive';
+import { findRunFolder, downloadTextFile, findFileByName } from '../../_github-storage.js';
 import { RunState } from '../../types';
 
 interface VercelRequest extends IncomingMessage {
