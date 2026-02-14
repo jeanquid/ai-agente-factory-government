@@ -27,6 +27,9 @@ export default async function handler(req, res) {
         console.log(`[${runId}] Initializing Drive structure...`);
 
         let rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+        console.log(`[${runId}] ENV Check: GOOGLE_DRIVE_ROOT_FOLDER_ID is '${rootFolderId}'`);
+
+
 
         if (!rootFolderId) {
             console.log("No GOOGLE_DRIVE_ROOT_FOLDER_ID provided, attempting to find/create by name...");
