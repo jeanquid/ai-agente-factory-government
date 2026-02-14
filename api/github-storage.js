@@ -49,50 +49,68 @@ export async function uploadOrUpdateTextFile(folderPath, filename, content, mime
     const { owner, repo } = getRepoCoordinates();
     const filePath = `${folderPath}/${filename}`;
 
-    // 1. Check if file exists to get its SHA (needed for update)
-    let sha = null;
-    try {
-        const checkRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePath}`, {
-            headers: getHeaders()
-        });
-        if (checkRes.ok) {
-            const data = await checkRes.json();
-            sha = data.sha;
+    const maxRetries = 5;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+        attempt++;
+
+        // 1. Check if file exists to get its SHA (needed for update)
+        let sha = null;
+        try {
+            // Add timestamp to query to bypass cache
+            const checkRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePath}?t=${Date.now()}`, {
+                headers: getHeaders()
+            });
+            if (checkRes.ok) {
+                const data = await checkRes.json();
+                sha = data.sha;
+            }
+        } catch (e) {
+            // Ignore network errors on check, assume new file
         }
-    } catch (e) {
-        // Ignore network errors on check, assume new file
+
+        // 2. Upload (Create or Update)
+        const contentBase64 = Buffer.from(content).toString('base64');
+
+        const body = {
+            message: `Update ${filename} via AI Factory (Attempt ${attempt})`,
+            content: contentBase64,
+            sha: sha // Include SHA if updating
+        };
+
+        const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePath}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            const result = await res.json();
+            return result.content ? result.content.path : filePath;
+        }
+
+        // If not 409, throw immediately
+        if (res.status !== 409) {
+            const errorText = await res.text();
+            throw new Error(`GitHub Upload Failed for ${filePath}: ${res.status} ${res.statusText} - ${errorText}`);
+        }
+
+        // If 409, wait and retry
+        console.warn(`[GitHub Storage] Conflict (409) on ${filePath}. Retrying ${attempt}/${maxRetries}...`);
+        // Exponential backoff: 500ms, 1000ms, 2000ms...
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt - 1)));
     }
 
-    // 2. Upload (Create or Update)
-    // Content must be Base64 encoded
-    const contentBase64 = Buffer.from(content).toString('base64');
-
-    const body = {
-        message: `Update ${filename} via AI Factory`,
-        content: contentBase64,
-        sha: sha // Include SHA if updating
-    };
-
-    const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePath}`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`GitHub Upload Failed for ${filePath}: ${res.status} ${res.statusText} - ${errorText}`);
-    }
-
-    const result = await res.json();
-    return result.content ? result.content.path : filePath; // Return path as ID
+    throw new Error(`GitHub Upload Failed for ${filePath} after ${maxRetries} retries (Conflict 409)`);
 }
 
 export async function downloadTextFile(filePathOrId) {
     // In our abstraction, ID is the File Path.
     const { owner, repo } = getRepoCoordinates();
 
-    const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePathOrId}`, {
+    // Add timestamp to prevent caching old content which leads to 409s on next write
+    const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${filePathOrId}?t=${Date.now()}`, {
         headers: getHeaders()
     });
 
@@ -116,7 +134,7 @@ export async function findFileByName(folderPath, name) {
     // But to be compatible with Drive logic (which returns ID or null), lets check existence.
 
     const { owner, repo } = getRepoCoordinates();
-    const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${fullPath}`, {
+    const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${fullPath}?t=${Date.now()}`, {
         method: 'HEAD',
         headers: getHeaders()
     });
