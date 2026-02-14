@@ -1,0 +1,24 @@
+{
+  "runId": "d6a09438-3755-4b74-a373-527756f5ce66",
+  "tenantId": "default",
+  "mission": " crea una app de meteorologia",
+  "createdAt": "2026-02-14T05:17:41.806Z",
+  "status": "running",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina"
+    ],
+    "currentStep": 0
+  },
+  "steps": [],
+  "artifacts": [],
+  "driveIds": {
+    "runFolderId": "data/runs/run-d6a09438-3755-4b74-a373-527756f5ce66",
+    "stepsFolderId": "data/runs/run-d6a09438-3755-4b74-a373-527756f5ce66/steps",
+    "finalFolderId": "data/runs/run-d6a09438-3755-4b74-a373-527756f5ce66/final"
+  }
+}
