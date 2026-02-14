@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { agents } from '../api/_data';
-import { AgentProfile, RunState, RunStep } from '../api/types';
+import { RunState, RunStep } from '../api/types';
 import {
     Play,
     CheckCircle,
     Loader2,
-    Terminal,
-    ArrowRight,
-    MessageSquare,
+    FileText,
+    Download,
+    Eye,
+    AlertCircle,
+    Brain,
     Database,
     Workflow,
     Shield,
     Megaphone,
-    Brain,
-    RefreshCw,
-    Search
+    ArrowRight
 } from 'lucide-react';
 
 interface LogEntry {
@@ -26,67 +26,16 @@ interface LogEntry {
 
 export const AgentOrchestration: React.FC = () => {
     const [mission, setMission] = useState('');
-    const [runId, setRunId] = useState('');
-    const [inputRunId, setInputRunId] = useState('');
-    const [isRunning, setIsRunning] = useState(false);
-    const [isProcessingStep, setIsProcessingStep] = useState(false);
     const [runState, setRunState] = useState<RunState | null>(null);
+    const [isRunning, setIsRunning] = useState(false);
     const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [readConfirmation, setReadConfirmation] = useState<Record<number, boolean>>({});
+
     const logsEndRef = useRef<HTMLDivElement>(null);
-
-    // Default workflow order if starting new
-    const workflowOrder = ['javier', 'fabricio', 'martin', 'damian', 'agustina'];
-
-    const activeAgentIndex = runState ? runState.workflow.currentStep : -1;
-    const activeAgentId = runState && activeAgentIndex < runState.workflow.order.length
-        ? runState.workflow.order[activeAgentIndex]
-        : null;
-    const activeAgent = activeAgentId ? agents.find(a => a.id === activeAgentId) : null;
-
-    const scrollToBottom = () => {
-        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [logs]);
 
     const addLog = (agentId: string, message: string, type: 'info' | 'success' | 'error' = 'info') => {
         setLogs(prev => [...prev, { agentId, message, timestamp: new Date(), type }]);
-    };
-
-    const loadRun = async () => {
-        if (!inputRunId) return;
-        try {
-            addLog('system', `Loading run ${inputRunId}...`, 'info');
-            const res = await fetch(`/api/runs/${inputRunId}/status`);
-            if (!res.ok) throw new Error('Run not found');
-            const data: RunState = await res.json();
-            setRunState(data);
-            setRunId(data.runId);
-            setMission(data.mission);
-
-            // Rebuild logs from state
-            const newLogs: LogEntry[] = [];
-            newLogs.push({ agentId: 'system', message: `Loaded run ${data.runId}`, timestamp: new Date(data.createdAt), type: 'info' });
-            data.steps.forEach(step => {
-                newLogs.push({ agentId: step.agentId, message: `Step ${step.step} started`, timestamp: new Date(step.startedAt || new Date()), type: 'info' });
-                if (step.status === 'completed') {
-                    newLogs.push({ agentId: step.agentId, message: `Step ${step.step} completed`, timestamp: new Date(step.finishedAt || new Date()), type: 'success' });
-                }
-            });
-            setLogs(newLogs);
-
-            if (data.workflow.currentStep < data.workflow.order.length) {
-                setIsRunning(true); // Auto-resume? Or just allow user to click next?
-                // Let's allow user to continue
-            } else {
-                addLog('system', 'Run already completed.', 'success');
-            }
-
-        } catch (e: any) {
-            addLog('system', `Failed to load run: ${e.message}`, 'error');
-        }
+        setTimeout(() => logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     };
 
     const startRun = async () => {
@@ -95,97 +44,92 @@ export const AgentOrchestration: React.FC = () => {
         setIsRunning(true);
         setLogs([]);
         setRunState(null);
-
-        addLog('system', `Initializing Factory Protocol for mission: "${mission}"`, 'info');
+        addLog('system', `Initializing v3.1 Factory for: "${mission}"`, 'info');
 
         try {
             const res = await fetch('/api/runs/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tenantId: 'default',
-                    mission,
-                    workflowOrder
-                })
+                body: JSON.stringify({ mission }) // removed specific workflowOrder to us default
             });
 
             if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Failed to start run');
+                const txt = await res.text();
+                throw new Error(txt.substring(0, 120));
             }
 
             const data = await res.json();
-            setRunId(data.runId);
             setRunState(data.state);
-            addLog('system', `Run initialized with ID: ${data.runId}`, 'success');
+            addLog('system', `Run initialized: ${data.runId}`, 'success');
 
         } catch (error: any) {
-            addLog('system', `Error starting run: ${error.message}`, 'error');
+            addLog('system', `Startup Error: ${error.message}`, 'error');
             setIsRunning(false);
         }
     };
 
-    const processNextStep = async () => {
-        if (!runId || !runState || isProcessingStep) return;
+    const executeStep = async (stepNum: number, agentId: string) => {
+        if (!runState) return;
 
-        const currentStepIdx = runState.workflow.currentStep;
-        const totalSteps = runState.workflow.order.length;
+        addLog(agentId, `Starting execution (Step ${stepNum})...`, 'info');
 
-        if (currentStepIdx >= totalSteps) {
-            setIsRunning(false);
-            addLog('system', 'Factory Protocol Complete. All artifacts generated.', 'success');
-            return;
-        }
-
-        const nextAgentId = runState.workflow.order[currentStepIdx];
-        const agentName = agents.find(a => a.id === nextAgentId)?.name || nextAgentId;
-
-        setIsProcessingStep(true);
-        addLog('system', `Handing over control to ${agentName}...`, 'info');
+        // Optimistic update
+        setRunState(prev => {
+            if (!prev) return null;
+            const newSteps = [...prev.steps];
+            newSteps[stepNum - 1].status = 'running';
+            return { ...prev, steps: newSteps };
+        });
 
         try {
-            const res = await fetch(`/api/runs/${runId}/execute`, {
+            const res = await fetch(`/api/runs/${runState.runId}/steps/${stepNum}/execute`, {
                 method: 'POST'
             });
 
             if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Failed to execute step');
+                const txt = await res.text();
+                throw new Error(txt.substring(0, 150));
             }
 
             const data = await res.json();
             setRunState(data.state);
-            addLog(nextAgentId, `${agentName} tasks completed successfully.`, 'success');
-
-            // Auto-continue logic if desired, or relying on useEffect?
-            // Let's rely on useEffect to trigger next if isRunning is true
+            addLog(agentId, `Execution completed. Waiting for review.`, 'success');
 
         } catch (error: any) {
-            addLog(nextAgentId, `Error executing step: ${error.message}`, 'error');
-            setIsRunning(false); // Stop on error
-        } finally {
-            setIsProcessingStep(false);
+            addLog(agentId, `Execution Failed: ${error.message}`, 'error');
+            setRunState(prev => {
+                if (!prev) return null;
+                const newSteps = [...prev.steps];
+                newSteps[stepNum - 1].status = 'failed';
+                newSteps[stepNum - 1].error = error.message;
+                return { ...prev, steps: newSteps };
+            });
         }
     };
 
-    // Auto-advance effect
-    useEffect(() => {
-        if (isRunning && runState && !isProcessingStep) {
-            const currentStepIdx = runState.workflow.currentStep;
-            const totalSteps = runState.workflow.order.length;
+    const confirmRead = async (stepNum: number) => {
+        if (!runState) return;
 
-            if (currentStepIdx < totalSteps) {
-                // Add a small delay for visual pacing
-                const timer = setTimeout(() => {
-                    processNextStep();
-                }, 1000);
-                return () => clearTimeout(timer);
-            } else {
-                setIsRunning(false);
-                addLog('system', 'Workflow finished naturally.', 'success');
+        try {
+            const res = await fetch(`/api/runs/${runState.runId}/steps/${stepNum}/confirm-read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ read: true })
+            });
+
+            if (!res.ok) {
+                const txt = await res.text();
+                throw new Error(txt.substring(0, 120));
             }
+
+            const data = await res.json();
+            setRunState(data.state);
+            addLog('system', `Step ${stepNum} approved. Moving to next.`, 'info');
+
+        } catch (error: any) {
+            addLog('system', `Confirmation failed: ${error.message}`, 'error');
         }
-    }, [isRunning, runState, isProcessingStep]);
+    };
 
     const getAgentIcon = (iconName: string, size = 20) => {
         switch (iconName) {
@@ -199,222 +143,213 @@ export const AgentOrchestration: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in pb-12">
-            <header className="mb-4 flex justify-between items-end">
-                <div>
-                    <h1 className="text-4xl font-bold text-white mb-2">Multi-Agent Orchestrator</h1>
-                    <p className="text-slate-400">Synchronous fabrication chain (v3) with Drive Persistence.</p>
-                </div>
-                <div className="flex gap-2">
-                    <input
-                        className="bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm text-white"
-                        placeholder="Load Run ID..."
-                        value={inputRunId}
-                        onChange={e => setInputRunId(e.target.value)}
-                    />
-                    <button onClick={loadRun} className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-sm flex items-center gap-2">
-                        <Search size={14} /> Load
-                    </button>
-                    {runId && (
-                        <div className="bg-indigo-900/50 text-indigo-200 px-3 py-1 rounded text-sm border border-indigo-500/30">
-                            Run ID: {runId}
-                        </div>
-                    )}
-                </div>
+        <div className="space-y-8 pb-12">
+            <header className="mb-4">
+                <h1 className="text-4xl font-bold text-white mb-2">Factory v3.1 <span className="text-indigo-400 text-lg">In-Memory Edition</span></h1>
+                <p className="text-slate-400">Manual verification flow enabled. PDF Generation active.</p>
             </header>
 
-            {/* Input Section */}
+            {/* Mission Input */}
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                        <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wider">Mission Objective</label>
-                        <input
-                            type="text"
-                            value={mission}
-                            onChange={(e) => setMission(e.target.value)}
-                            placeholder="e.g., Create a Legal Assistant for contract review..."
-                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                            disabled={isRunning || (!!runId && runState?.workflow.currentStep !== 0)}
-                        />
-                    </div>
-                    <div className="flex items-end gap-2">
-                        <button
-                            onClick={startRun}
-                            disabled={isRunning || !mission || (!!runId)}
-                            className={`
-                        h-[50px] px-8 rounded-lg font-bold flex items-center gap-2 transition-all
-                        ${isRunning || !mission || (!!runId)
-                                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 active:scale-95'}
-                    `}
-                        >
-                            {isRunning ? <Loader2 className="animate-spin" /> : <Play fill="currentColor" />}
-                            {isRunning ? 'RUNNING...' : 'START RUN'}
-                        </button>
-                        {runId && !isRunning && runState && runState.workflow.currentStep < runState.workflow.order.length && (
-                            <button
-                                onClick={() => setIsRunning(true)}
-                                className="h-[50px] px-6 rounded-lg font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg flex items-center gap-2"
-                            >
-                                <RefreshCw size={18} />
-                                RESUME
-                            </button>
-                        )}
-                    </div>
+                <div className="flex gap-4">
+                    <input
+                        type="text"
+                        value={mission}
+                        onChange={(e) => setMission(e.target.value)}
+                        placeholder="Define the mission objective..."
+                        className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                        disabled={!!runState}
+                    />
+                    <button
+                        onClick={startRun}
+                        disabled={!!runState || !mission}
+                        className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white px-6 rounded-lg font-bold flex items-center gap-2"
+                    >
+                        {!!runState ? 'RUN ACTIVE' : 'START RUN'}
+                        <Play size={16} fill="currentColor" />
+                    </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[600px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Workflow (Left) */}
+                <div className="lg:col-span-2 space-y-6">
+                    {runState && runState.steps.map((step) => {
+                        const agent = agents.find(a => a.id === step.agentId)!;
+                        const isPending = step.status === 'pending';
+                        const isRunning = step.status === 'running';
+                        const isInReview = step.status === 'in_review';
+                        const isDone = step.status === 'done';
+                        const isFailed = step.status === 'failed';
 
-                {/* Visualization Pane (Left) */}
-                <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-xl p-8 relative overflow-hidden flex flex-col items-center justify-start">
-                    {/* Background Grid */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(30,41,59,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(30,41,59,0.3)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)] pointer-events-none" />
+                        // Only show if it's the current step or previous step
+                        // Actually show all previous steps + current
+                        if (step.step > runState.workflow.currentStep + 1) return null;
 
-                    {/* Agent Nodes */}
-                    <div className="relative z-10 w-full max-w-2xl mt-8">
-                        <div className="flex justify-between items-center relative">
-                            {/* Connection Line */}
-                            <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-800 -z-10">
-                                <div
-                                    className="h-full bg-indigo-500 transition-all duration-500 ease-linear"
-                                    style={{
-                                        width: activeAgentIndex === -1 ? '0%' : `${((activeAgentIndex) / (workflowOrder.length - 1)) * 100}%`
-                                    }}
-                                />
-                            </div>
+                        return (
+                            <div key={step.step} className={`
+                                border rounded-xl overflow-hidden transition-all
+                                ${isActiveStep(step, runState) ? 'border-indigo-500 bg-slate-900/80 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'border-slate-800 bg-slate-900/40'}
+                            `}>
+                                {/* Header */}
+                                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/20">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-lg ${isActiveStep(step, runState) ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-500'}`}>
+                                            {getAgentIcon(agent.iconName)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg text-white">{agent.name}</h3>
+                                            <span className="text-xs text-slate-400 uppercase tracking-widest">{agent.role}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <StatusBadge status={step.status} />
+                                    </div>
+                                </div>
 
-                            {workflowOrder.map((agentId, index) => {
-                                const agent = agents.find(a => a.id === agentId)!;
-                                const isActive = index === activeAgentIndex;
-                                const isCompleted = index < activeAgentIndex;
+                                {/* Body Content */}
+                                <div className="p-6">
+                                    {isPending && isActiveStep(step, runState) && (
+                                        <div className="text-center py-8">
+                                            <p className="text-slate-400 mb-4">{agent.mission}</p>
+                                            <button
+                                                onClick={() => executeStep(step.step, step.agentId)}
+                                                className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 mx-auto"
+                                            >
+                                                <Play size={18} fill="currentColor" />
+                                                EXECUTE AGENT
+                                            </button>
+                                        </div>
+                                    )}
 
-                                let colorClass = 'border-slate-700 bg-slate-800 text-slate-500';
-                                if (isActive) colorClass = 'border-indigo-500 bg-indigo-900/20 text-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.3)] scale-110';
-                                if (isCompleted) colorClass = 'border-emerald-500 bg-emerald-900/20 text-emerald-400';
+                                    {isRunning && (
+                                        <div className="flex flex-col items-center justify-center py-12 text-indigo-400">
+                                            <Loader2 size={40} className="animate-spin mb-4" />
+                                            <p className="animate-pulse">Thinking & Generating Artifacts...</p>
+                                        </div>
+                                    )}
 
-                                return (
-                                    <div key={agentId} className="flex flex-col items-center gap-4 transition-all duration-500">
-                                        <div className={`
-                                    w-16 h-16 rounded-2xl border-2 flex items-center justify-center relative
-                                    transition-all duration-300
-                                    ${colorClass}
-                                `}>
-                                            {getAgentIcon(agent.iconName, 28)}
-
-                                            {isActive && isProcessingStep && (
-                                                <span className="absolute -top-2 -right-2 flex h-4 w-4">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-4 w-4 bg-indigo-500"></span>
-                                                </span>
-                                            )}
-                                            {isCompleted && (
-                                                <div className="absolute -bottom-2 -right-2 bg-emerald-500 rounded-full p-0.5 border-2 border-slate-900">
-                                                    <CheckCircle size={12} className="text-white" />
+                                    {(isInReview || isDone) && step.deliverables && (
+                                        <div className="space-y-6">
+                                            {/* Summary */}
+                                            <div className="prose prose-invert max-w-none bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                                <h4 className="text-emerald-400 font-bold flex items-center gap-2 mb-2">
+                                                    <FileText size={16} /> Executive Summary
+                                                </h4>
+                                                <div className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
+                                                    {step.deliverables.summaryMarkdown}
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="text-center">
-                                            <p className={`font-bold text-sm ${isActive ? 'text-white' : 'text-slate-400'}`}>{agent.name}</p>
-                                            <p className="text-[10px] uppercase font-bold text-slate-600">{agent.role}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                            </div>
 
-                    {/* Active Output Display */}
-                    <div className="mt-16 w-full max-w-3xl flex-1 flex flex-col gap-4">
-                        {runState?.steps.map((step) => {
-                            const agent = agents.find(a => a.id === step.agentId);
-                            const isLast = step.step === runState.workflow.currentStep; // Confusing logic.
-                            // Show all completed steps?
-                            return (
-                                <div key={step.step} className="bg-black/40 rounded-lg border border-slate-800 p-6 backdrop-blur-sm animate-fade-in text-left">
-                                    <div className="flex items-center gap-3 mb-2 text-indigo-400 border-b border-white/10 pb-2">
-                                        {getAgentIcon(agent?.iconName || 'Brain', 16)}
-                                        <span className="font-bold text-lg">{agent?.name || step.agentId} Output</span>
-                                        <span className="text-xs text-slate-500 ml-auto">{new Date(step.finishedAt!).toLocaleTimeString()}</span>
-                                    </div>
-                                    <div className="prose prose-invert max-w-none prose-sm">
-                                        <p className="text-slate-300 italic">{step.summaryMarkdown}</p>
-                                        <details className="mt-2 text-xs">
-                                            <summary className="cursor-pointer text-indigo-400 hover:text-indigo-300">View Raw Output JSON</summary>
-                                            <pre className="bg-slate-950 p-2 rounded mt-2 overflow-x-auto text-emerald-400">
-                                                {JSON.stringify(step.outputJson, null, 2)}
-                                            </pre>
-                                        </details>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                            {/* Todos */}
+                                            <div className="prose prose-invert max-w-none bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                                <h4 className="text-orange-400 font-bold flex items-center gap-2 mb-2">
+                                                    <AlertCircle size={16} /> Action Items & Risks
+                                                </h4>
+                                                <div className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
+                                                    {step.deliverables.todoMarkdown}
+                                                </div>
+                                            </div>
 
-                        {isProcessingStep && activeAgent && (
-                            <div className="bg-black/40 rounded-lg border border-slate-800 p-6 backdrop-blur-sm animate-pulse">
-                                <div className="flex items-center gap-3 mb-4 text-indigo-400">
-                                    {getAgentIcon(activeAgent.iconName)}
-                                    <span className="font-bold text-lg">{activeAgent.name} is working...</span>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="h-2 w-3/4 bg-slate-800 rounded" />
-                                    <div className="h-2 w-1/2 bg-slate-800 rounded" />
+                                            {/* Action Bar */}
+                                            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+                                                <a
+                                                    href={step.pdfUrl || '#'}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-bold px-4 py-2 hover:bg-white/5 rounded transition-colors"
+                                                >
+                                                    <Download size={16} />
+                                                    DOWNLOAD PDF
+                                                </a>
+
+                                                {isInReview && (
+                                                    <div className="flex items-center gap-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                                                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={readConfirmation[step.step] || false}
+                                                                onChange={(e) => setReadConfirmation({ ...readConfirmation, [step.step]: e.target.checked })}
+                                                                className="w-5 h-5 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500/50"
+                                                            />
+                                                            <span className="text-white text-sm">I have read the documents</span>
+                                                        </label>
+                                                        <button
+                                                            onClick={() => confirmRead(step.step)}
+                                                            disabled={!readConfirmation[step.step]}
+                                                            className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white px-4 py-2 rounded font-bold text-sm transition-all"
+                                                        >
+                                                            CONTINUE
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {isFailed && (
+                                        <div className="text-center py-6">
+                                            <div className="text-red-400 bg-red-900/20 p-4 rounded-lg mb-4 text-sm font-mono text-left">
+                                                ERROR: {step.error}
+                                            </div>
+                                            <button
+                                                onClick={() => executeStep(step.step, step.agentId)}
+                                                className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded font-bold"
+                                            >
+                                                RETRY
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        )}
-                    </div>
-
+                        );
+                    })}
                 </div>
 
-                {/* Live Logs (Right) */}
-                <div className="lg:col-span-1 bg-slate-950 border border-slate-800 rounded-xl flex flex-col overflow-hidden max-h-[600px]">
-                    <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-slate-300">
-                            <Terminal size={16} />
-                            <span className="font-mono text-sm font-bold">SYSTEM LOGS</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            {isRunning && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
-                            <span className="text-xs text-slate-400 font-mono">{isRunning ? 'LIVE' : 'IDLE'}</span>
-                        </div>
+                {/* Logs Right Panel */}
+                <div className="lg:col-span-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col max-h-[calc(100vh-200px)] sticky top-4">
+                    <div className="p-3 bg-slate-900 border-b border-slate-800 font-mono text-xs font-bold text-slate-400 uppercase">
+                        System Event Log
                     </div>
-
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
-                        {logs.length === 0 && (
-                            <div className="text-slate-600 italic text-center mt-10">No activity recorded.</div>
-                        )}
-                        {logs.map((log, i) => {
-                            const agent = agents.find(a => a.id === log.agentId);
-                            let color = 'text-slate-300';
-                            if (log.type === 'error') color = 'text-red-400';
-                            if (log.type === 'success') color = 'text-emerald-400';
-                            if (agent?.color === 'purple') color = 'text-purple-400';
-                            if (agent?.color === 'blue') color = 'text-blue-400';
-                            if (agent?.color === 'orange') color = 'text-orange-400';
-                            if (agent?.color === 'red') color = 'text-red-400';
-                            if (agent?.color === 'emerald') color = 'text-emerald-400';
-
-                            return (
-                                <div key={i} className="flex gap-3 animate-fade-in">
-                                    <span className="text-slate-600 shrink-0">
-                                        {log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        {logs.map((log, i) => (
+                            <div key={i} className="flex gap-2">
+                                <span className="text-slate-600">{log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}</span>
+                                <div>
+                                    <span className={`font-bold mr-1 ${log.type === 'error' ? 'text-red-500' : log.type === 'success' ? 'text-emerald-500' : 'text-blue-400'}`}>
+                                        [{log.agentId}]
                                     </span>
-                                    <div>
-                                        <span className={`font-bold mr-2 ${color}`}>
-                                            [{log.agentId === 'system' ? 'KERNEL' : log.agentId.toUpperCase()}]
-                                        </span>
-                                        <span className="text-slate-400">{log.message}</span>
-                                    </div>
+                                    <span className="text-slate-300">{log.message}</span>
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ))}
                         <div ref={logsEndRef} />
                     </div>
                 </div>
-
             </div>
         </div>
     );
 };
 
+const StatusBadge = ({ status }: { status: string }) => {
+    const styles = {
+        pending: 'bg-slate-800 text-slate-500',
+        running: 'bg-indigo-900/50 text-indigo-400 border border-indigo-500/30 animate-pulse',
+        in_review: 'bg-orange-900/50 text-orange-400 border border-orange-500/30',
+        done: 'bg-emerald-900/50 text-emerald-400 border border-emerald-500/30',
+        failed: 'bg-red-900/50 text-red-400 border border-red-500/30'
+    };
+    return (
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${styles[status as keyof typeof styles] || styles.pending}`}>
+            {status.replace('_', ' ')}
+        </span>
+    );
+};
 
+// Helper to determine if a step is arguably "active" (e.g. ready to run or in review)
+// Used for highligting
+function isActiveStep(step: RunStep, run: RunState) {
+    // If it is the current step cursor
+    if (run.workflow.currentStep === step.step - 1) return true;
+    return false;
+}

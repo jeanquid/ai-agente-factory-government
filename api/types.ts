@@ -47,18 +47,24 @@ export interface GeneratePromptResponse {
     };
 }
 
-export type StepStatus = 'pending' | 'running' | 'completed' | 'failed';
+export type StepStatus = 'pending' | 'running' | 'in_review' | 'done' | 'failed';
+
+export interface Deliverables {
+    outputJson: any;
+    summaryMarkdown: string;
+    todoMarkdown: string;
+}
 
 export interface RunStep {
     step: number;
     agentId: string;
     status: StepStatus;
+    readConfirmed?: boolean;
     startedAt?: string;
     finishedAt?: string;
-    driveFolderId?: string;
+    deliverables?: Deliverables;
     error?: string;
-    outputJson?: any;
-    summaryMarkdown?: string;
+    pdfUrl?: string; // /api/runs/:runId/steps/:step/pdf
 }
 
 export interface Artifact {
@@ -80,11 +86,12 @@ export interface RunState {
         currentStep: number;
     };
     steps: RunStep[];
-    artifacts: Artifact[];
+    // Artifacts array is deprecated in v3.1 in favor of step.deliverables, kept for compatibility if needed
+    artifacts?: Artifact[];
 }
 
 export interface AgentOutput {
     outputJson: any;
     summaryMarkdown: string;
-    nextSuggestions: string[];
+    todoMarkdown: string; // Added in v3.1
 }

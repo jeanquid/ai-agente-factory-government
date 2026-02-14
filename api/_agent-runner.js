@@ -79,12 +79,13 @@ export async function executeAgent(agentId, runState, previousSteps) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // Construct context
+    // Construct context
     const context = previousSteps.map(step => ({
         agentId: step.agentId,
         role: agents.find(a => a.id === step.agentId)?.role,
-        output: step.outputJson,
-        summary: step.summaryMarkdown,
-        nextSuggestions: step.nextSuggestions
+        output: step.deliverables?.outputJson,
+        summary: step.deliverables?.summaryMarkdown,
+        todo: step.deliverables?.todoMarkdown
     }));
 
     const systemPrompt = `
@@ -105,9 +106,10 @@ export async function executeAgent(agentId, runState, previousSteps) {
     The keys must be:
     - "outputJson": A structured object containing the artifacts/data you produced.
     - "summaryMarkdown": A clear, executive summary of what you did and your findings (in Markdown).
-    - "nextSuggestions": An array of strings with suggestions for the next steps or agents.
+    - "todoMarkdown": A markdown list of actionable next steps, risks, or follow-up items.
     
     Ensure "outputJson" is rich and detailed, matching your capabilities.
+    Ensure "todoMarkdown" is clear and actionable.
     `;
 
     try {
@@ -135,14 +137,14 @@ export async function executeAgent(agentId, runState, previousSteps) {
         const parsed = JSON.parse(jsonText);
 
         // Validation
-        if (typeof parsed.outputJson === 'undefined' || typeof parsed.summaryMarkdown === 'undefined') {
-            throw new Error("Response missing required fields (outputJson, summaryMarkdown)");
+        if (typeof parsed.outputJson === 'undefined' || typeof parsed.summaryMarkdown === 'undefined' || typeof parsed.todoMarkdown === 'undefined') {
+            throw new Error("Response missing required fields (outputJson, summaryMarkdown, todoMarkdown)");
         }
 
         return {
             outputJson: parsed.outputJson,
             summaryMarkdown: parsed.summaryMarkdown,
-            nextSuggestions: parsed.nextSuggestions || []
+            todoMarkdown: parsed.todoMarkdown
         };
 
     } catch (error) {

@@ -2,49 +2,42 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# AI Agent Factory - v3 (Drive Persistence Edition)
+# AI Agent Factory - v3.1 (Manual Flow + In-Memory)
 
-This version introduces a real execution pipeline where agents persist their state and artifacts to Google Drive, allowing for resumable runs and audit trails.
+This version implements a **manual "Read & Continue" workflow** where each step produces concrete deliverables (JSON, Summary, Todo) and a downloadable PDF report.
 
-**View your app in AI Studio:** https://ai.studio/apps/drive/1wilgT1rcpQr7oJgxhRi0dDcHVj3q_U9O
+**IMPORTANT:** This version uses an **In-Memory Store** for simplicity and speed.
+- **Run data is lost on server restart (cold boot) or redeploy.**
+- Ideal for quick demos or single-session use.
 
-## New Features (v3)
-- **Real Pipeline:** Agents execute sequentially, passing context (JSON/Markdown) to the next agent.
-- **Drive Storage:** No database. All state (`run.json`, `audit.jsonl`) and artifacts are stored in Google Drive.
-- **Resumable Runs:** You can close the browser and resume any run by its ID.
-- **Audit:** Full audit log of every step and error.
+## New Features (v3.1)
+- **Manual Gates:** Users must confirm "I have read the documents" before proceeding to the next agent.
+- **PDF Generation:** On-demand generation of step reports (`step-01-javier.pdf`).
+- **Strict Deliverables:** Every step guarantees `outputJson`, `summaryMarkdown` and `todoMarkdown`.
 
 ## Run Locally
 
-**Prerequisites:** Node.js (v18+), Vercel CLI (recommended).
+**Prerequisites:** Node.js (v18+).
 
 1. **Install dependencies:**
    ```bash
    npm install
    ```
+   *Note: Includes `pdfkit` for PDF generation.*
 
-2. **Google Cloud Setup (Drive API):**
-   - Go to Google Cloud Console.
-   - Enable **Google Drive API**.
-   - Create a **Service Account**.
-   - Create a JSON Key for the Service Account and download it.
-   - (Optional) Share a folder in your personal Drive with the Service Account email if you want to see the files easily, though the system will create its own 'AgentFactory' folder in the Service Account's drive.
+2. **Environment Setup:**
+   Create `.env.local`:
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key
+   GEMINI_MODEL=gemini-2.5-flash # Optional, default
+   ```
 
-3. **Environment Setup:**
-   - Create `.env.local` in the root.
-   - Add the following variables:
-     ```bash
-     GEMINI_API_KEY=your_gemini_api_key
-     GOOGLE_SERVICE_ACCOUNT_JSON='{"type": "service_account", ...}' # The full JSON string of your key file
-     GOOGLE_DRIVE_ROOT_FOLDER_NAME=AgentFactory
-     ```
-   - *Tip:* For `GOOGLE_SERVICE_ACCOUNT_JSON`, ensure the JSON is single-line or properly escaped if using `.env` files locally.
-
-4. **Run the app:**
-   - Use Vercel logic for API routes:
-     ```bash
-     npx vercel dev
-     ```
+3. **Run the app:**
+   ```bash
+   npm run dev
+   # or
+   npx vercel dev
+   ```
 
 ## API Usage
 
@@ -53,20 +46,32 @@ This version introduces a real execution pipeline where agents persist their sta
 **Body:**
 ```json
 {
-  "tenantId": "default",
-  "mission": "Create a Legal Agent",
-  "workflowOrder": ["javier", "fabricio", "martin", "damian", "agustina"]
+  "mission": "Create a Legal Agent for contract review"
 }
 ```
 **Returns:** `{ "ok": true, "runId": "uuid...", "state": {...} }`
 
-### 2. Execute Next Step
-**Endpoint:** `POST /api/runs/:runId/next`
-**Returns:** `{ "ok": true, "state": {...}, "stepResult": {...} }`
+### 2. Execute Specific Step
+**Endpoint:** `POST /api/runs/:runId/steps/:step/execute`
+**Description:** Triggers the AI agent for that step.
+**Returns:**
+```json
+{
+  "ok": true,
+  "state": {...},
+  "deliverables": { "outputJson":..., "summaryMarkdown":..., "todoMarkdown":... },
+  "pdfUrl": "/api/runs/:runId/steps/:step/pdf"
+}
+```
 
-### 3. Get Run State
-**Endpoint:** `GET /api/runs/:runId`
-**Returns:** `RunState` object.
+### 3. Generate PDF
+**Endpoint:** `GET /api/runs/:runId/steps/:step/pdf`
+**Returns:** `application/pdf` binary stream.
+
+### 4. Confirm Read
+**Endpoint:** `POST /api/runs/:runId/steps/:step/confirm-read`
+**Body:** `{ "read": true }`
+**Description:** Unlocks the next step in the workflow.
 
 ## Testing with Curl
 
@@ -74,15 +79,22 @@ This version introduces a real execution pipeline where agents persist their sta
 ```bash
 curl -X POST http://localhost:3000/api/runs/start \
   -H "Content-Type: application/json" \
-  -d '{"mission": "Test Run", "workflowOrder": ["javier"]}'
+  -d '{"mission": "Test Run"}'
 ```
 
-**Run Next Step (replace RUN_ID):**
+**Execute Step 1 (Replace RUN_ID):**
 ```bash
-curl -X POST http://localhost:3000/api/runs/RUN_ID_HERE/next
+curl -X POST http://localhost:3000/api/runs/RUN_ID_HERE/steps/1/execute
 ```
 
-**Check State:**
+**Download PDF:**
 ```bash
-curl http://localhost:3000/api/runs/RUN_ID_HERE
+curl -O http://localhost:3000/api/runs/RUN_ID_HERE/steps/1/pdf
+```
+
+**Confirm Read:**
+```bash
+curl -X POST http://localhost:3000/api/runs/RUN_ID_HERE/steps/1/confirm-read \
+  -H "Content-Type: application/json" \
+  -d '{"read": true}'
 ```
