@@ -59,7 +59,7 @@ export const AgentOrchestration: React.FC = () => {
         if (!inputRunId) return;
         try {
             addLog('system', `Loading run ${inputRunId}...`, 'info');
-            const res = await fetch(`/api/runs/${inputRunId}`);
+            const res = await fetch(`/api/runs/${inputRunId}/status`);
             if (!res.ok) throw new Error('Run not found');
             const data: RunState = await res.json();
             setRunState(data);
@@ -144,7 +144,7 @@ export const AgentOrchestration: React.FC = () => {
         addLog('system', `Handing over control to ${agentName}...`, 'info');
 
         try {
-            const res = await fetch(`/api/runs/${runId}/next`, {
+            const res = await fetch(`/api/runs/${runId}/execute`, {
                 method: 'POST'
             });
 
