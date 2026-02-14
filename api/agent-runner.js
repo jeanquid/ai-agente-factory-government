@@ -11,7 +11,7 @@ export async function executeAgent(agentId, runState, previousSteps) {
     const genAI = new GoogleGenerativeAI(apiKey);
     // Use gemini-1.5-flash for speed and cost, or pro for reasoning
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-pro",
         // Remove strict JSON mode to avoid API incompatibility issues with current SDK version
         // generationConfig: { responseMimeType: "application/json" }
     });
