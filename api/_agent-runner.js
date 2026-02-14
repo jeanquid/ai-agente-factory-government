@@ -3,10 +3,17 @@ import { agents } from './_data.js';
 
 // Configuration
 const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-const FALLBACK_MODEL = "gemini-pro"; // Stable fallback v1 (often redirects to 1.0-pro)
+// List of fallbacks to try in order
+const FALLBACK_MODELS = [
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash-001",
+    "gemini-1.0-pro",
+    "gemini-pro",
+    "gemini-1.0-pro-latest"
+];
 
 /**
- * Executes a prompt against Gemini with automatic fallback to a secondary model 
+ * Executes a prompt against Gemini with automatic fallback to secondary models
  * if the primary one returns a 404 (Not Found) error.
  */
 async function generateWithFallback(genAI, systemPrompt) {
@@ -19,29 +26,44 @@ async function generateWithFallback(genAI, systemPrompt) {
             return response.text();
         } catch (error) {
             // Throw object to preserve context
-            const errObj = { model: modelName, originalError: error };
-            throw errObj;
+            throw { model: modelName, originalError: error };
         }
     };
 
+    // 1. Try Primary
     try {
         return await tryModel(PRIMARY_MODEL);
     } catch (err) {
-        // Build error message safely
         const errorMsg = err.originalError?.message || String(err.originalError);
         const isNotFound = errorMsg.includes("not found") || errorMsg.includes("404");
 
-        if (isNotFound && PRIMARY_MODEL !== FALLBACK_MODEL) {
-            console.warn(`[Gemini] Primary model '${PRIMARY_MODEL}' failed (404). Switching to fallback: '${FALLBACK_MODEL}'`);
+        // If not a 404 error (e.g. rate limit, quota, invalid API key), rethrow immediately
+        if (!isNotFound) {
+            console.error(`[Gemini] Primary model error (NON-404): ${errorMsg}`);
+            throw err.originalError;
+        }
+
+        console.warn(`[Gemini] Primary model '${PRIMARY_MODEL}' failed (404/NotFound). Starting fallback chain...`);
+
+        // 2. Try Fallbacks
+        let lastError = err;
+        for (const fallbackModel of FALLBACK_MODELS) {
+            if (fallbackModel === PRIMARY_MODEL) continue; // Skip if same
+
             try {
-                return await tryModel(FALLBACK_MODEL);
-            } catch (fallbackErr) {
-                const fbErrorMsg = fallbackErr.originalError?.message || String(fallbackErr.originalError);
-                throw new Error(`Gemini Fallback Failed after Primary failed. Primary Error: ${errorMsg}. Fallback Error: ${fbErrorMsg}`);
+                console.log(`[Gemini] Trying fallback: ${fallbackModel}`);
+                return await tryModel(fallbackModel);
+            } catch (fbErr) {
+                console.warn(`[Gemini] Fallback '${fallbackModel}' failed.`);
+                lastError = fbErr;
+                // If this error is NOT a 404, we might want to stop trying? 
+                // No, keep trying other models just in case.
+                continue;
             }
         }
-        // Rethrow original if not a 404 or if models are same
-        throw err.originalError;
+
+        // If all fail
+        throw new Error(`All Gemini models failed. Last error from ${lastError.model}: ${lastError.originalError?.message || lastError}`);
     }
 }
 
