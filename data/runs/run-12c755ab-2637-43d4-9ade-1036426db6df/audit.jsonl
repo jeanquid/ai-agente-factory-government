@@ -1,1 +1,1 @@
-{"timestamp":"2026-02-14T04:31:36.094Z","event":"RUN_STARTED","details":{"mission":"crea una app juridica"}}
+{"timestamp":"2026-02-14T04:31:36.094Z","event":"RUN_STARTED","details":{"mission":"crea una app juridica"}}{"ts":"2026-02-14T04:31:38.721Z","runId":"12c755ab-2637-43d4-9ade-1036426db6df","tenantId":"default","event":"STEP_STARTED","step":1,"agentId":"javier"}
