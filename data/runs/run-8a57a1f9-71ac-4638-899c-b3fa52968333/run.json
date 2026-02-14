@@ -1,0 +1,24 @@
+{
+  "runId": "8a57a1f9-71ac-4638-899c-b3fa52968333",
+  "tenantId": "default",
+  "mission": "crea una app legal",
+  "createdAt": "2026-02-14T04:39:07.390Z",
+  "status": "running",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina"
+    ],
+    "currentStep": 0
+  },
+  "steps": [],
+  "artifacts": [],
+  "driveIds": {
+    "runFolderId": "data/runs/run-8a57a1f9-71ac-4638-899c-b3fa52968333",
+    "stepsFolderId": "data/runs/run-8a57a1f9-71ac-4638-899c-b3fa52968333/steps",
+    "finalFolderId": "data/runs/run-8a57a1f9-71ac-4638-899c-b3fa52968333/final"
+  }
+}
