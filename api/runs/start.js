@@ -1,4 +1,4 @@
-import { findOrCreateFolder, uploadOrUpdateTextFile } from '../../drive.js';
+import { findOrCreateFolder, uploadOrUpdateTextFile } from '../drive.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {
