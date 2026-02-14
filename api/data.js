@@ -1,7 +1,7 @@
+// JavaScript version of data.ts
+// Removed imports since we don't need types at runtime.
 
-import { AgentProfile, GovernanceRule } from './types';
-
-export const governanceRules: GovernanceRule[] = [
+export const governanceRules = [
     {
         title: "No Invented Tools",
         description: "Do not invent infrastructure not mentioned. Assume standard options if missing.",
@@ -29,7 +29,7 @@ export const governanceRules: GovernanceRule[] = [
     }
 ];
 
-export const agents: AgentProfile[] = [
+export const agents = [
     {
         id: 'javier',
         name: 'Javier',
