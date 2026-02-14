@@ -1,11 +1,13 @@
-
 import { IncomingMessage, ServerResponse } from 'http';
 import { findOrCreateFolder, uploadOrUpdateTextFile } from '../drive';
 import { RunState } from '../types';
-import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
+// Define minimal Vercel Types locally to avoid 'npm i @vercel/node' dependency if not desired
 interface VercelRequest extends IncomingMessage {
     body: any;
+    query: { [key: string]: string | string[] };
+    cookies: { [key: string]: string };
 }
 
 interface VercelResponse extends ServerResponse {
@@ -13,6 +15,7 @@ interface VercelResponse extends ServerResponse {
     status: (statusCode: number) => VercelResponse;
     send: (body: any) => VercelResponse;
 }
+
 
 export default async function handler(
     req: VercelRequest,
@@ -35,17 +38,24 @@ export default async function handler(
 
     // Add global error handler to catch initialization issues
     try {
+        console.log("DEBUG: /api/runs/start called");
+
         if (req.method !== 'POST') {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
         const { mission, workflowOrder, tenantId = 'default' } = req.body;
+        console.log("DEBUG: Body parsed", { mission, tenantId });
 
         if (!mission) {
             return res.status(400).json({ error: 'Mission is required' });
         }
 
-        const runId = crypto.randomUUID(); // Changed from uuidv4() to crypto.randomUUID() to match original imports
+        // Use uuid package to correspond with import { v4 as uuidv4 } from 'uuid';
+        // Note: You need to make sure 'uuid' is imported at the top.
+        // I will assume the import is `import { v4 as uuidv4 } from 'uuid';` based on previous context.
+        const runId = uuidv4();
+        console.log(`DEBUG: Generated RunID: ${runId}`);
 
         // --- 1. Initialize Drive Structure ---
         console.log(`[${runId}] Initializing Drive structure...`);
