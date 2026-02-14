@@ -26,16 +26,22 @@ export default async function handler(req, res) {
         // --- 1. Initialize Drive Structure ---
         console.log(`[${runId}] Initializing Drive structure...`);
 
-        let rootFolderId;
-        try {
-            const rootFolderName = process.env.GOOGLE_DRIVE_ROOT_FOLDER_NAME || 'AgentFactory';
-            rootFolderId = await findOrCreateFolder(rootFolderName);
-            console.log(`[${runId}] Root folder ID: ${rootFolderId}`);
-        } catch (e) {
-            console.error("FATAL: Root Folder Access Failed:", e.message);
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'application/json');
-            return res.end(JSON.stringify({ error: `Drive Access Error: ${e.message}` }));
+        let rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+
+        if (!rootFolderId) {
+            console.log("No GOOGLE_DRIVE_ROOT_FOLDER_ID provided, attempting to find/create by name...");
+            try {
+                const rootFolderName = process.env.GOOGLE_DRIVE_ROOT_FOLDER_NAME || 'AgentFactory';
+                rootFolderId = await findOrCreateFolder(rootFolderName);
+                console.log(`[${runId}] Root folder ID found/created: ${rootFolderId}`);
+            } catch (e) {
+                console.error("FATAL: Root Folder Access Failed:", e.message);
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: `Drive Access Error: ${e.message}. Quota issues? Share a folder with the SA and set GOOGLE_DRIVE_ROOT_FOLDER_ID.` }));
+            }
+        } else {
+            console.log(`[${runId}] Using Configured Root Folder ID: ${rootFolderId}`);
         }
 
         // 2. Create Tenant Folder
