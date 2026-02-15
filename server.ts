@@ -44,6 +44,11 @@ async function startServer() {
         await handleVercel(mod)(req, res);
     });
 
+    app.post('/api/test-model', async (req, res) => {
+        const mod = await import('./api/test-model.js');
+        await handleVercel(mod)(req, res);
+    });
+
     // Helper to merge route params into query (mimic Vercel/Next.js)
     // using Proxy to avoid mutating read-only req properties
     const createProxyReq = (req: any, routeParams: any) => {

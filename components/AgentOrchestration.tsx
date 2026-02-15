@@ -20,6 +20,7 @@ import {
     Circle,
     ArrowRight
 } from 'lucide-react';
+import { ModelSelector } from './ModelSelector';
 
 interface LogEntry {
     agentId: string;
@@ -332,23 +333,27 @@ export const AgentOrchestration: React.FC = () => {
                 </div>
 
                 {/* Logs Right Panel */}
-                <div className="lg:col-span-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col max-h-[calc(100vh-200px)] sticky top-4">
-                    <div className="p-3 bg-slate-900 border-b border-slate-800 font-mono text-xs font-bold text-slate-400 uppercase">
-                        {t('systemEventLog')}
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
-                        {logs.map((log, i) => (
-                            <div key={i} className="flex gap-2">
-                                <span className="text-slate-600">{log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}</span>
-                                <div>
-                                    <span className={`font-bold mr-1 ${log.type === 'error' ? 'text-red-500' : log.type === 'success' ? 'text-emerald-500' : 'text-blue-400'}`}>
-                                        [{log.agentId}]
-                                    </span>
-                                    <span className="text-slate-300">{log.message}</span>
+                <div className="lg:col-span-1 space-y-6">
+                    <ModelSelector />
+
+                    <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col max-h-[calc(100vh-500px)] sticky top-4">
+                        <div className="p-3 bg-slate-900 border-b border-slate-800 font-mono text-xs font-bold text-slate-400 uppercase">
+                            {t('systemEventLog')}
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
+                            {logs.map((log, i) => (
+                                <div key={i} className="flex gap-2">
+                                    <span className="text-slate-600">{log.timestamp.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}</span>
+                                    <div>
+                                        <span className={`font-bold mr-1 ${log.type === 'error' ? 'text-red-500' : log.type === 'success' ? 'text-emerald-500' : 'text-blue-400'}`}>
+                                            [{log.agentId}]
+                                        </span>
+                                        <span className="text-slate-300">{log.message}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                        <div ref={logsEndRef} />
+                            ))}
+                            <div ref={logsEndRef} />
+                        </div>
                     </div>
                 </div>
             </div>
