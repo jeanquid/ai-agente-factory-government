@@ -12,7 +12,7 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 1
+    "currentStep": 2
   },
   "steps": [
     {
@@ -58,7 +58,7 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T05:36:03.952Z",
       "deliverables": {
         "outputJson": {
@@ -91,7 +91,8 @@
         "summaryMarkdown": "## Diseño de Esquema de Datos para la Aplicación de Meteoritos\n\nComo Fabricio, he diseñado el esquema de base de datos SQL para la aplicación de meteoritos. El objetivo principal es almacenar y gestionar eficientemente la información sobre dónde cayeron los meteoritos, incluyendo su ubicación geográfica, fecha, masa y clasificación. Se ha priorizado el uso de PostGIS para permitir consultas espaciales robustas y eficientes.\n\nEl esquema propuesto (`meteorite_falls`) incluye campos clave como `name`, `mass_g`, `fall_date`, `recclass`, `latitude`, `longitude`, y un tipo de dato `GEOGRAPHY` para la ubicación. Se han añadido índices para optimizar el rendimiento de las búsquedas por nombre, fecha y ubicación. También se ha considerado un `tenant_id` opcional para futuras expansiones a un modelo multi-inquilino.\n\nAunque la estrategia de vectorización no es crítica para la funcionalidad inicial, se ha dejado abierta la posibilidad de integrarla para manejar datos no estructurados (descripciones, informes) en el futuro, mejorando la capacidad de búsqueda semántica. Se ha delineado la necesidad de un pipeline de ingestión de datos para poblar la base de datos desde fuentes externas como la NASA y la Meteoritical Society, y se ha propuesto una política de retención de datos indefinida para esta información histórica.",
         "todoMarkdown": "### Próximos Pasos como Fabricio:\n- **1. Refinar Schema con Javier (The Brain):** Revisar el esquema propuesto con Javier para asegurar que cumple con todos los requisitos de negocio y funcionalidad de la aplicación.\n- **2. Identificar Fuentes de Datos Primarias:** Colaborar para confirmar las fuentes de datos más fiables y completas para la ingestión de datos de meteoritos.\n- **3. Planificar Pipeline de Ingestión de Datos:** Diseñar el proceso ETL detallado para extraer, transformar y cargar los datos de las fuentes externas a la base de datos `meteorite_falls`, incluyendo la lógica de normalización y manejo de duplicados.\n- **4. Configurar Entorno PostGIS:** Asegurar que la base de datos PostgreSQL esté configurada con la extensión PostGIS para soportar los tipos de datos geográficos y las funciones espaciales.\n- **5. Establecer Políticas de Backup y Recuperación:** Definir e implementar la estrategia de backups automáticos y planes de recuperación de desastres para la base de datos de meteoritos."
       },
-      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/2/pdf"
+      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/2/pdf",
+      "readConfirmed": true
     },
     {
       "step": 3,
