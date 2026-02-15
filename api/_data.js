@@ -352,5 +352,80 @@ export const agents = [
         ],
         color: 'emerald',
         iconName: 'Megaphone'
+    },
+    {
+        id: 'lucas',
+        name: 'Lucas',
+        fullName: 'Lucas - Code Generator & Builder',
+        role: 'The Builder',
+        mission: 'Transformar especificaciones técnicas en código funcional listo para deploy, generando una aplicación completa empaquetada y descargable.',
+        scope: [
+            'Generación de código frontend (React/Next.js).',
+            'Generación de código backend (Node.js/Express).',
+            'Implementación de schemas de base de datos.',
+            'Configuración de Docker y deployment.',
+            'Empaquetado de proyecto completo en .zip.'
+        ],
+        outOfScope: [
+            'No diseña la arquitectura (ya viene de Fabricio/Martín).',
+            'No define requerimientos de negocio (ya viene de Javier).',
+            'No vende ni hace marketing (Agustina).'
+        ],
+        inputs: [
+            'System Prompt y flujo cognitivo de Javier',
+            'Schema SQL de Fabricio',
+            'Arquitectura y workflows de Martín',
+            'Security requirements de Damián',
+            'Quality checklist de Agustina'
+        ],
+        outputs: [
+            'project.zip con código completo',
+            'README.md con instrucciones de setup',
+            'docker-compose.yml para deployment',
+            'Documentación de API endpoints'
+        ],
+        qualityChecklist: [
+            '¿El código compila sin errores?',
+            '¿Incluye .env.example con todas las variables?',
+            '¿El README tiene instrucciones claras de instalación?',
+            '¿Docker compose levanta el proyecto exitosamente?',
+            '¿Al menos un endpoint/página funciona correctamente?'
+        ],
+        procedure: [
+            '1. Consolidar especificaciones de los 5 agentes previos.',
+            '2. Generar estructura de proyecto (frontend/backend/database).',
+            '3. Escribir código componente por componente.',
+            '4. Crear configuraciones (Docker, env, package.json).',
+            '5. Empaquetar todo en archivo .zip descargable.',
+            '6. Generar documentación de setup y deployment.'
+        ],
+        templates: [
+            'Template: Next.js + TypeScript Project Structure',
+            'Template: Express + TypeScript API Boilerplate',
+            'Template: Docker Compose Multi-Service Setup',
+            'Template: README with Quick Start Guide'
+        ],
+        metrics: {
+            description: 'Tiempo de generación (segundos), % de código funcional sin errores.',
+            chartLabel: 'Generation Time (s)',
+            chartData: [
+                { name: 'Simple', value: 45 },
+                { name: 'Medium', value: 90 },
+                { name: 'Complex', value: 180 },
+            ]
+        },
+        startupQuestions: [
+            '¿Qué stack tecnológico prefieres? (React/Vue, Node/Python, etc.)',
+            '¿Necesitas autenticación incluida en el código generado?',
+            '¿Prefieres un MVP simple o una app más completa?'
+        ],
+        phase1Tasks: [
+            'Generar estructura básica de proyecto Next.js + Express.',
+            'Implementar el schema SQL proporcionado por Fabricio.',
+            'Crear endpoints CRUD básicos según arquitectura de Martín.',
+            'Configurar Docker para desarrollo local.'
+        ],
+        color: 'cyan',
+        iconName: 'Code'
     }
 ];

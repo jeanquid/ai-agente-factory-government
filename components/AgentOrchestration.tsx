@@ -263,6 +263,17 @@ export const AgentOrchestration: React.FC = () => {
                                                     DOWNLOAD PDF
                                                 </a>
 
+                                                {step.agentId === 'lucas' && step.deliverables?.outputJson?.downloadUrl && (
+                                                    <a
+                                                        href={step.deliverables.outputJson.downloadUrl}
+                                                        download
+                                                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2 rounded shadow-lg shadow-emerald-500/20 transition-all border border-emerald-400/30"
+                                                    >
+                                                        <Download size={16} />
+                                                        DOWNLOAD PROJECT (.ZIP)
+                                                    </a>
+                                                )}
+
                                                 {isInReview && (
                                                     <div className="flex items-center gap-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                                                         <label className="flex items-center gap-2 cursor-pointer select-none">

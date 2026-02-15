@@ -1,5 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { agents } from './_data.js';
+import { generateProjectCode } from './_code-generator.js';
+import fs from 'fs';
+import path from 'path';
+import archiver from 'archiver';
+import os from 'os';
 
 // Configuration: Updated for Senior Backend Requirements (2025-2026)
 const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -82,6 +87,12 @@ async function generateWithFallback(genAI, systemPrompt) {
 export async function executeAgent(agentId, runState, previousSteps) {
     const agent = agents.find(a => a.id === agentId);
     if (!agent) throw new Error(`Agent ${agentId} not found`);
+
+    // SPECIAL HANDLING FOR LUCAS - CODE GENERATION
+    if (agentId === 'lucas') {
+        console.log('[Lucas] 🏗️ Code generation agent detected');
+        return await executeLucasCodeGeneration(runState, previousSteps);
+    }
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
@@ -214,4 +225,198 @@ Execute your role as ${agent.name} and respond with the JSON object.
             status: 500
         };
     }
+}
+
+/**
+ * Lucas - The Builder
+ * Generates executable code from specifications
+ */
+async function executeLucasCodeGeneration(runState, previousSteps) {
+    console.log('[Lucas] 🚀 Starting project generation...');
+
+    try {
+        // 1. Consolidate outputs of previous agents
+        const specs = {};
+        for (const step of previousSteps) {
+            if (step.deliverables) {
+                specs[step.agentId] = {
+                    outputJson: step.deliverables.outputJson,
+                    summaryMarkdown: step.deliverables.summaryMarkdown,
+                    todoMarkdown: step.deliverables.todoMarkdown
+                };
+            }
+        }
+
+        console.log('[Lucas] ✅ Specs consolidated from:', Object.keys(specs).join(', '));
+
+        // 2. Generate code
+        const projectName = sanitizeProjectName(runState.mission);
+        console.log(`[Lucas] 📝 Generating project: ${projectName}...`);
+
+        const generatedProject = await generateProjectCode(specs, projectName);
+        console.log(`[Lucas] ✅ Generated ${Object.keys(generatedProject.files).length} files`);
+
+        // 3. Create physical files temporarily
+        const projectPath = await createPhysicalProject(generatedProject, projectName);
+        console.log(`[Lucas] ✅ Project created at: ${projectPath}`);
+
+        // 4. Create ZIP
+        // We save it in a public/outputs folder so the frontend can serve it
+        const outputsDir = path.join(process.cwd(), 'public', 'outputs');
+        if (!fs.existsSync(outputsDir)) {
+            fs.mkdirSync(outputsDir, { recursive: true });
+        }
+
+        const zipPath = await createZipFile(projectPath, projectName, outputsDir);
+        console.log(`[Lucas] ✅ Project zipped: ${zipPath}`);
+
+        const zipStats = fs.statSync(zipPath);
+        const zipSizeMB = (zipStats.size / 1024 / 1024).toFixed(2);
+        const zipFilename = path.basename(zipPath);
+
+        // 5. Return in standard format
+        return {
+            outputJson: {
+                projectName,
+                filesGenerated: Object.keys(generatedProject.files).length,
+                zipPath: zipPath,
+                zipSize: zipStats.size,
+                zipSizeMB,
+                structure: generatedProject.structure,
+                downloadUrl: `/outputs/${zipFilename}`,
+                instructions: {
+                    step1: "Download the ZIP file",
+                    step2: "Unzip into your working directory",
+                    step3: "Read the README.md",
+                    step4: "Run: docker-compose up",
+                    step5: "Open http://localhost:3000"
+                }
+            },
+            summaryMarkdown: `## 🎉 Code Generated Successfully
+
+**Project:** \`${projectName}\`  
+**Files:** ${Object.keys(generatedProject.files).length} files generated  
+**ZIP Size:** ${zipSizeMB} MB
+
+### 📦 Project Content:
+
+#### Frontend (Next.js + TypeScript)
+- ✅ React pages and components
+- ✅ API services
+- ✅ Tailwind CSS configuration
+
+#### Backend (Express + TypeScript)  
+- ✅ REST API with routes
+- ✅ Controllers and models
+- ✅ Authentication middleware
+
+#### Database (PostgreSQL)
+- ✅ SQL Schema implemented
+- ✅ Initial data seeds
+
+#### DevOps
+- ✅ Docker Compose setup
+- ✅ Environment variables configured
+- ✅ README with full instructions
+
+### 🚀 How to Use Your Project:
+
+1. **Download** the ZIP file
+2. **Unzip** on your computer
+3. **Read** the complete \`README.md\`
+4. **Install Docker** if you don't have it installed
+5. **Run:** \`docker-compose up\`
+6. **Open** http://localhost:3000 in your browser
+
+Your application will be running locally in minutes! 🚀`,
+
+            todoMarkdown: `- [ ] **Download** the project ZIP file (${zipSizeMB} MB)
+- [ ] **Unzip** into your working directory
+- [ ] **Read** the complete \`README.md\`
+- [ ] **Verify** that you have Docker installed
+- [ ] **Run** \`docker-compose up\` in the project root
+- [ ] **Open** http://localhost:3000 in your browser
+- [ ] **Explore** the source code
+- [ ] **Customize** components according to your brand
+- [ ] **Configure** environment variables for production
+- [ ] **Test** all main functionalities
+- [ ] **Deploy** to your preferred platform
+- [ ] **Share** your new app with users! 🎉`
+        };
+
+    } catch (error) {
+        console.error('[Lucas] ❌ Error during code generation:', error);
+        throw new Error(`Code generation failed: ${error.message}`);
+    }
+}
+
+/**
+ * Helper: Sanitize project name
+ */
+function sanitizeProjectName(mission) {
+    return mission
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 50) || 'generated-app';
+}
+
+/**
+ * Helper: Create physical project files
+ */
+async function createPhysicalProject(generatedProject, projectName) {
+    const timestamp = Date.now();
+    const tempDir = os.tmpdir();
+    const projectDir = path.join(tempDir, `factory-gen-${projectName}-${timestamp}`);
+
+    console.log(`[Lucas] Creating project directory: ${projectDir}`);
+
+    if (!fs.existsSync(projectDir)) {
+        fs.mkdirSync(projectDir, { recursive: true });
+    }
+
+    // Create all files
+    for (const [filePath, content] of Object.entries(generatedProject.files)) {
+        const fullPath = path.join(projectDir, filePath);
+        const dir = path.dirname(fullPath);
+
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        fs.writeFileSync(fullPath, content, 'utf8');
+    }
+
+    return projectDir;
+}
+
+/**
+ * Helper: Create ZIP file
+ */
+async function createZipFile(projectPath, projectName, outputsDir) {
+    const timestamp = Date.now();
+    const zipName = `${projectName}-${timestamp}.zip`;
+    const zipPath = path.join(outputsDir, zipName);
+
+    return new Promise((resolve, reject) => {
+        const output = fs.createWriteStream(zipPath);
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Maximum compression
+        });
+
+        output.on('close', () => {
+            const sizeKB = (archive.pointer() / 1024).toFixed(2);
+            console.log(`[Lucas] ZIP created: ${sizeKB} KB total`);
+            resolve(zipPath);
+        });
+
+        archive.on('error', (err) => {
+            console.error('[Lucas] ZIP error:', err);
+            reject(err);
+        });
+
+        archive.pipe(output);
+        archive.directory(projectPath, false);
+        archive.finalize();
+    });
 }
