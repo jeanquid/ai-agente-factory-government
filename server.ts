@@ -3,6 +3,7 @@ import { createServer } from 'vite';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import bodyParser from 'body-parser';
+import fs from 'fs';
 
 // Import API handlers (using tsx to run them directly)
 // We need to use dynamic imports or require consistently.
@@ -91,6 +92,22 @@ async function startServer() {
     });
 
     app.use(vite.middlewares);
+
+    // Catch-all route to serve index.html for SPA
+    app.use('*', async (req, res, next) => {
+        const url = req.originalUrl;
+        try {
+            // Read index.html
+            let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+            // Transform through Vite
+            template = await vite.transformIndexHtml(url, template);
+            // Send back
+            res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+        } catch (e) {
+            vite.ssrFixStacktrace(e as Error);
+            next(e);
+        }
+    });
 
     app.listen(port, () => {
         console.log(`> Ready on http://localhost:${port}`);
