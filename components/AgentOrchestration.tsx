@@ -140,7 +140,7 @@ export const AgentOrchestration: React.FC = () => {
             case 'Workflow': return <Workflow size={size} />;
             case 'Shield': return <Shield size={size} />;
             case 'Megaphone': return <Megaphone size={size} />;
-            case 'Code': return <Code size={size} />;
+            case 'Code': return <Terminal size={size} />; // Terminal is definitely in lucide
             default: return <Brain size={size} />;
         }
     };
