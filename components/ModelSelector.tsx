@@ -20,12 +20,20 @@ const AVAILABLE_MODELS = [
         description: 'Más potente para tareas complejas'
     },
     {
-        id: 'gemini-pro',
-        name: 'Gemini Pro',
+        id: 'gemini-1.5-flash-8b',
+        name: 'Gemini 1.5 Flash 8B',
         provider: 'google',
-        speed: 2,
+        speed: 3,
+        cost: 1,
+        description: 'Ultra rápido para tareas sencillas'
+    },
+    {
+        id: 'gemini-2.0-flash-exp',
+        name: 'Gemini 2.0 Flash (Preview)',
+        provider: 'google',
+        speed: 3,
         cost: 2,
-        description: 'Modelo balanceado estándar'
+        description: 'Nueva generación con mayor velocidad'
     },
     {
         id: 'claude-3-5-sonnet-20240620',
