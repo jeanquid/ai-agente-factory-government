@@ -18,7 +18,41 @@
     {
       "step": 1,
       "agentId": "javier",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T05:32:41.284Z",
+      "deliverables": {
+        "outputJson": {
+          "appNameConcept": "GeoImpacto: Rastreador de Meteoritos",
+          "appMissionStatement": "La misión de GeoImpacto es proporcionar a los usuarios una plataforma intuitiva y científicamente precisa para explorar y visualizar los puntos de impacto confirmados de meteoritos en la Tierra, basándose exclusivamente en datos históricos verificados.",
+          "coreCognitiveFlowConcept": "graph TD\n    A[Usuario inicia app/busca ubicación/filtra] --> B{App recibe consulta};\n    B --> C{Consulta base de datos de impactos históricos y confirmados};\n    C -- Datos Confirmados Encontrados --> D[Muestra impactos relevantes en mapa interactivo];\n    C -- No Hay Datos / Error --> E[Informa al usuario 'Sin datos para su búsqueda' o 'Error en la consulta'];\n    D --> F[Permite al usuario seleccionar un impacto para ver detalles];\n    F --> G[Muestra detalles del impacto (nombre, fecha, coordenadas, masa, tipo, fuente de datos)];\n    G --> H[Ofrece opciones de navegación o compartir];",
+          "keyFeaturesConcept": [
+            "Visualización de impactos históricos de meteoritos en un mapa global interactivo.",
+            "Filtros avanzados por fecha (rango), tamaño (masa estimada), tipo de meteorito y país/región.",
+            "Detalles exhaustivos para cada impacto: nombre del meteorito, fecha del impacto, coordenadas exactas, masa estimada, tipo de meteorito y la fuente de datos científica.",
+            "Capacidad de búsqueda por nombre de meteorito o ubicación geográfica.",
+            "Integración con fuentes de datos científicas reconocidas para asegurar la veracidad."
+          ],
+          "antiHallucinationStrategy": [
+            "**Principio de Veracidad de Datos**: Solo se mostrarán impactos de meteoritos que hayan sido verificados y catalogados por instituciones científicas reconocidas (ej., The Meteoritical Society, NASA JPL).",
+            "**No Inventar Información**: La aplicación está estrictamente prohibida de generar o inventar datos de impactos ficticios, no verificados o especulativos.",
+            "**Restricción a Datos Históricos**: La funcionalidad se limita a la presentación de eventos pasados y confirmados. No se incluirán predicciones sobre futuros impactos de meteoritos ni se especulará sobre trayectorias no confirmadas.",
+            "**Transparencia de Fuentes**: Siempre que sea posible, se indicará claramente la fuente de los datos para cada impacto mostrado, permitiendo al usuario verificar la información.",
+            "**Manejo de Datos Incompletos**: En caso de datos incompletos (ej. masa desconocida), la aplicación indicará explícitamente la falta de información en lugar de inferirla o inventarla."
+          ],
+          "startupQuestionsAnswered": {
+            "objetivoPrincipalDeNegocio": "El objetivo principal es proporcionar una herramienta educativa y de referencia precisa, que satisfaga la curiosidad del usuario sobre los impactos de meteoritos, fomentando el interés científico y la comprensión de nuestro entorno espacial.",
+            "nivelCreatividadVsPrecision": "Se requiere un nivel del **100% de precisión estricta** en los datos de los impactos. La creatividad se aplicará en el diseño de la interfaz de usuario para hacer la información accesible, atractiva y fácil de explorar, pero nunca comprometiendo la exactitud de los datos.",
+            "erroresFatales": [
+              "Mostrar impactos de meteoritos falsos, no confirmados o inventados.",
+              "Inventar ubicaciones, fechas, masas o cualquier otro detalle de un impacto.",
+              "Ofrecer predicciones sobre futuros impactos de meteoritos o especulaciones no científicamente validadas."
+            ]
+          }
+        },
+        "summaryMarkdown": "## Diseño Conceptual de GeoImpacto: Rastreador de Meteoritos\n\nComo Javier, 'The Brain', he diseñado la arquitectura cognitiva y el propósito central para la aplicación de meteoritos solicitada. La app, tentativamente llamada **GeoImpacto**, tiene como misión principal ofrecer una plataforma intuitiva y científicamente precisa para que los usuarios exploren y visualicen los puntos de impacto confirmados de meteoritos en la Tierra, basándose exclusivamente en datos históricos verificados.\n\nEl flujo cognitivo se ha estructurado para asegurar que la app procese las consultas del usuario, acceda a bases de datos de impactos confirmados y presente la información de manera clara en un mapa interactivo. Se han establecido **reglas estrictas anti-alucinación** para garantizar la veracidad de los datos, prohibiendo la invención de información, la especulación o la predicción de futuros eventos. La precisión es la máxima prioridad, complementada con una interfaz de usuario atractiva para la accesibilidad de los datos.",
+        "todoMarkdown": "Actionable steps:\n- **Definir Fuentes de Datos**: Identificar y formalizar las APIs o bases de datos científicas exactas (ej., NASA, The Meteoritical Society) que servirán como fuente primaria de información para los impactos de meteoritos.\n- **Colaboración con Fabricio**: Iniciar la conceptualización del esquema de la base de datos con Fabricio para asegurar que pueda almacenar eficientemente todos los detalles de los impactos (coordenadas, fecha, masa, tipo, nombre, fuente).\n- **Diseño del Prompt de Procesamiento de Datos**: Redactar un 'System Prompt' detallado para el módulo de procesamiento de datos que garantice la estricta adherencia a las reglas anti-alucinación y la validación de la información antes de su presentación.\n- **Prototipado de Flujo de Datos**: Realizar un prototipo conceptual del flujo de datos y la visualización con un conjunto de datos simulados para validar la estrategia de presentación y las reglas de anti-alucinación."
+      },
+      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/1/pdf"
     },
     {
       "step": 2,
