@@ -11,13 +11,13 @@
       "damian",
       "agustina"
     ],
-    "currentStep": 0
+    "currentStep": 1
   },
   "steps": [
     {
       "step": 1,
       "agentId": "javier",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T03:22:52.310Z",
       "deliverables": {
         "outputJson": {
@@ -79,7 +79,8 @@
         "summaryMarkdown": "## Diseño Conceptual de \"Conexión IA\": La Mente Detrás de Tu Próxima Conexión\n\nComo Javier, \"El Cerebro\", he diseñado la arquitectura lógica y el propósito fundamental de \"Conexión IA\", una aplicación de citas innovadora. El objetivo principal es trascender la superficialidad, facilitando conexiones genuinas y duraderas mediante un motor de matching inteligente y un entorno seguro.\n\nHemos definido un flujo cognitivo claro para la interacción del usuario, desde el registro hasta el chat y la gestión de perfiles. Las características clave incluyen una gestión de perfiles robusta, un motor de matching impulsado por IA, una experiencia de descubrimiento intuitiva y, crucialmente, fuertes medidas de seguridad y moderación.\n\nSe han establecido criterios de aceptación rigurosos y \"reglas anti-alucinación\" para asegurar que el algoritmo siempre priorice la relevancia y autenticidad de los matches, y que la integridad de los datos del usuario y la seguridad de la plataforma sean inquebrantables. Este diseño sienta las bases para una aplicación que no solo conecta, sino que entiende y protege a sus usuarios.",
         "todoMarkdown": "### Próximos Pasos (Según el Rol de Javier - El Cerebro)\n-   **1. Refinar Requerimientos Detallados:** Trabajar con Agustina (o el cliente) para desglosar cada característica en historias de usuario y requerimientos funcionales específicos.\n-   **2. Especificar el Algoritmo de Matching:** Detallar los parámetros y pesos exactos que el motor de IA utilizará para calcular la compatibilidad, incluyendo consideraciones de privacidad y sesgos.\n-   **3. Diseñar Pruebas de Alucinación/Relevancia:** Crear un set de casos de prueba específicos para validar que el algoritmo de matching NO sugiere perfiles irrelevantes o que no cumplen las preferencias mínimas del usuario.\n-   **4. Definir Protocolos de Moderación IA:** Especificar los umbrales y tipos de contenido que el sistema de IA debe detectar, las acciones automáticas/manuales a seguir y los procesos de apelación.\n-   **5. Preparar \"Visto Bueno\" Final:** Documentar los criterios para la aprobación final del pase a producción, asegurando que todos los aspectos de seguridad, relevancia y experiencia de usuario se cumplan antes del lanzamiento."
       },
-      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/1/pdf"
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/1/pdf",
+      "readConfirmed": true
     },
     {
       "step": 2,
