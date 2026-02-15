@@ -108,8 +108,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
             })}
           </nav>
 
-          <div className="p-4 border-t border-slate-800 space-y-4 shadow-2xl">
-            <ModelSelector />
+          <div className="p-4 border-t border-slate-800 space-y-4 bg-slate-900/50">
+            <ModelSelector compact={true} />
             <LanguageToggle />
             <div className="bg-slate-800/50 rounded p-3 text-xs text-slate-500">
               <p className="font-semibold text-slate-400 mb-1">{t('governmentStatus')}</p>
