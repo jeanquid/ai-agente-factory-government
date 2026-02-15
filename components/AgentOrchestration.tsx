@@ -15,6 +15,7 @@ import {
     Shield,
     Megaphone,
     Code,
+    Circle,
     ArrowRight
 } from 'lucide-react';
 
