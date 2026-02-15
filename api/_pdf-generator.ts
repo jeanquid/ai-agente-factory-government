@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-import { RunState, RunStep } from './types.js';
+import { RunState, RunStep } from './_types.js';
 
 export async function generateStepPDF(runState: RunState, step: RunStep): Promise<Buffer> {
     return new Promise((resolve, reject) => {

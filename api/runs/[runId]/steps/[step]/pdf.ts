@@ -10,10 +10,9 @@ interface VercelRequest extends IncomingMessage {
 }
 
 interface VercelResponse extends ServerResponse {
-    setHeader: (name: string, value: string) => VercelResponse;
-    end: (content: any) => VercelResponse;
-    status: (statusCode: number) => VercelResponse;
     json: (body: any) => VercelResponse;
+    status: (statusCode: number) => VercelResponse;
+    send: (body: any) => VercelResponse;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -29,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const runState = getRun(runId as string);
+        const runState = await getRun(runId as string);
 
         if (!runState) {
             return res.status(404).json({ error: 'Run not found (Memory flushed)' });

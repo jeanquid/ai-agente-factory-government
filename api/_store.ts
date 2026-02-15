@@ -1,4 +1,4 @@
-import { RunState, RunStep } from './types.js';
+import { RunState, RunStep } from './_types.js';
 import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import { uploadOrUpdateTextFile, downloadTextFile, findRunFolder, findOrCreateFolder } from './_github-storage.js';

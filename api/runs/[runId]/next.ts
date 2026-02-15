@@ -2,7 +2,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 // @ts-ignore
 import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../_github-storage.js';
-import { RunState, RunStep } from '../../types';
+import { RunState, RunStep } from '../../_types';
 // @ts-ignore
 import { executeAgent } from '../../_agent-runner.js';
 
@@ -85,7 +85,7 @@ export default async function handler(
 
         await uploadOrUpdateTextFile(stepFolderId, 'input.json', JSON.stringify({
             mission: runState.mission,
-            context: runState.steps.map(s => ({ agent: s.agentId, output: s.outputJson }))
+            context: runState.steps.map(s => ({ agent: s.agentId, output: s.deliverables?.outputJson }))
         }, null, 2));
 
         await uploadOrUpdateTextFile(stepFolderId, 'output.json', JSON.stringify(result.outputJson, null, 2));
@@ -95,11 +95,13 @@ export default async function handler(
         const newStep: RunStep = {
             step: stepNumber,
             agentId,
-            status: 'completed',
+            status: 'done',
             finishedAt: new Date().toISOString(),
-            outputJson: result.outputJson,
-            summaryMarkdown: result.summaryMarkdown,
-            driveFolderId: stepFolderId
+            deliverables: {
+                outputJson: result.outputJson,
+                summaryMarkdown: result.summaryMarkdown,
+                todoMarkdown: result.todoMarkdown
+            }
         };
 
         runState.steps.push(newStep);
@@ -124,7 +126,7 @@ export default async function handler(
         if (runState.workflow.currentStep >= totalSteps) {
             const finalFolderId = await findFileByName(runFolderId, 'final');
             const finalReport = `# Final Mission Report: ${runState.mission}\n\n` +
-                runState.steps.map(s => `## Step ${s.step}: ${s.agentId}\n${s.summaryMarkdown}`).join('\n\n');
+                runState.steps.map(s => `## Step ${s.step}: ${s.agentId}\n${s.deliverables?.summaryMarkdown}`).join('\n\n');
 
             await uploadOrUpdateTextFile(finalFolderId!, 'final_report.md', finalReport, 'text/markdown');
             await uploadOrUpdateTextFile(finalFolderId!, 'final_state.json', JSON.stringify(runState, null, 2));

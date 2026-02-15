@@ -1,7 +1,7 @@
 
 import { IncomingMessage, ServerResponse } from 'http';
 import { findRunFolder, downloadTextFile, findFileByName } from '../../_github-storage.js';
-import { RunState } from '../../types';
+import { RunState } from '../../_types';
 
 interface VercelRequest extends IncomingMessage {
     query: {

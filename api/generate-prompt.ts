@@ -1,7 +1,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { agents, governanceRules as defaultRules } from './_data';
-import { GeneratePromptRequest, GeneratePromptResponse } from './types';
+import { GeneratePromptRequest, GeneratePromptResponse } from './_types';
 import { IncomingMessage, ServerResponse } from 'http';
 
 // Polyfill for Vercel Request helper types since we might not have @vercel/node user-side
@@ -115,12 +115,12 @@ export default async function handler(
       ${JSON.stringify(rulesToUse, null, 2)}
     `;
 
-        const modelName = 'gemini-2.5-flash';
+        const modelName = 'gemini-2.0-flash';
         const model = genAI.getGenerativeModel({ model: modelName });
 
         // Call Gemini API
-        const result = await model.generateContent(systemInstruction);
-        const response = await result.response;
+        const genResult = await model.generateContent(systemInstruction);
+        const response = await genResult.response;
         // Text is a method or property depending on version, usually .text()
         const text = response.text();
 
@@ -137,7 +137,7 @@ export default async function handler(
             timestamp: new Date().toISOString()
         }));
 
-        const result: GeneratePromptResponse = {
+        const finalResult: GeneratePromptResponse = {
             ok: true,
             promptMarkdown: text,
             meta: {
@@ -147,7 +147,7 @@ export default async function handler(
             }
         };
 
-        res.status(200).json(result);
+        res.status(200).json(finalResult);
 
     } catch (error: any) {
         console.error(JSON.stringify({

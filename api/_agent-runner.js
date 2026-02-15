@@ -3,13 +3,13 @@ import { agents } from './_data.js';
 
 // Configuration: Updated for 2025-2026 Model Support
 // Primary model target: Gemini 2.5 Flash
-const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
 // List of fallbacks to try in order.
 // We prioritize the 2.5 series, then 2.0, and keep 1.5/1.0 as last resorts if still available/supported.
 const FALLBACK_MODELS = [
-    "gemini-2.5-pro",      // Powerful fallback
-    "gemini-2.5-flash-latest", // Alias check
+    "gemini-1.5-pro",      // Powerful fallback
+    "gemini-2.0-flash-exp", // Alias check
     "gemini-2.0-flash",    // Previous stable flash
     "gemini-1.5-flash",    // Deprecated but might work for legacy keys
     "gemini-pro"           // Legacy stable
