@@ -261,7 +261,103 @@
     {
       "step": 4,
       "agentId": "damian",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T13:45:39.764Z",
+      "deliverables": {
+        "outputJson": {
+          "Matriz_Roles_Permisos": {
+            "roles": [
+              {
+                "nombre": "Usuario Final",
+                "descripcion": "Usuarios que acceden a la información meteorológica.",
+                "permisos": [
+                  "ver_clima_actual",
+                  "ver_pronostico_extendido",
+                  "gestionar_ubicaciones_favoritas_propias",
+                  "acceder_historial_climatico_propio",
+                  "configurar_notificaciones_personales"
+                ],
+                "acceso_datos_sensibles": {
+                  "ubicaciones_favoritas": "Solo propias, cifradas en reposo y tránsito.",
+                  "datos_de_ubicacion_actual": "Temporal, cifrados en tránsito."
+                }
+              },
+              {
+                "nombre": "Administrador",
+                "descripcion": "Personal encargado de la gestión y mantenimiento de la aplicación.",
+                "permisos": [
+                  "todos_los_permisos_de_usuario_final",
+                  "gestionar_usuarios_y_roles",
+                  "configurar_integraciones_API_externas",
+                  "acceder_logs_seguridad_y_auditoria",
+                  "gestionar_contenido_y_configuracion_general",
+                  "monitorear_rendimiento_y_salud_del_sistema"
+                ],
+                "acceso_datos_sensibles": {
+                  "api_keys_externas": "A través de bóveda de secretos, acceso con menor privilegio.",
+                  "credenciales_bd": "A través de bóveda de secretos, acceso con menor privilegio.",
+                  "datos_de_usuario": "Acceso limitado y auditado para resolución de problemas, con anonimización donde sea posible."
+                }
+              }
+            ]
+          },
+          "Reporte_Vulnerabilidades_Potenciales": {
+            "items": [
+              {
+                "id": "RV001",
+                "nombre": "Exposición de credenciales de API de terceros",
+                "descripcion": "Las claves de API para servicios meteorológicos externos o bases de datos podrían ser expuestas si se hardcodean o se almacenan incorrectamente.",
+                "impacto": "Acceso no autorizado a servicios, costos elevados, interrupción del servicio, manipulación de datos.",
+                "mitigacion_propuesta": "Almacenamiento en una bóveda de secretos dedicada (e.g., AWS Secrets Manager, Azure Key Vault, HashiCorp Vault), inyección en tiempo de ejecución, rotación de claves."
+              },
+              {
+                "id": "RV002",
+                "nombre": "Almacenamiento inseguro de datos de usuario",
+                "descripcion": "Datos como ubicaciones favoritas o preferencias de notificación podrían no estar cifrados en reposo o no ser protegidos adecuadamente contra acceso no autorizado.",
+                "impacto": "Fuga de información personal, violación de la privacidad del usuario, incumplimiento de normativas (GDPR).",
+                "mitigacion_propuesta": "Cifrado de datos en reposo (ej. TDE para DB, cifrado a nivel de disco), uso de conexiones seguras (TLS/SSL) para datos en tránsito, anonimización donde sea posible."
+              },
+              {
+                "id": "RV003",
+                "nombre": "Falta de validación de entradas y sanitización",
+                "descripcion": "La falta de validación y sanitización en las entradas del usuario (ej. búsqueda de ubicaciones) puede llevar a ataques de inyección (SQLi, XSS).",
+                "impacto": "Acceso no autorizado a la base de datos, manipulación de datos, ejecución de código malicioso en el cliente.",
+                "mitigacion_propuesta": "Implementar validación estricta de entradas en el frontend y backend, uso de ORMs/Prepared Statements, sanitización de salidas."
+              },
+              {
+                "id": "RV004",
+                "nombre": "Gestión de sesiones y autenticación débil",
+                "descripcion": "Tokens de sesión predecibles, falta de expiración de sesión o ausencia de Multi-Factor Authentication (MFA) para administradores.",
+                "impacto": "Secuestro de sesión, acceso no autorizado a cuentas de usuario o administrativas.",
+                "mitigacion_propuesta": "Implementar tokens de sesión robustos y aleatorios, expiración de sesión adecuada, forzar MFA para cuentas administrativas, usar OAuth2/OpenID Connect para autenticación."
+              }
+            ]
+          },
+          "Boveda_Secretos_Estrategia": {
+            "recomendacion_general": "Implementar un sistema de gestión de secretos centralizado y seguro.",
+            "detalles": [
+              "**Plataforma Sugerida:** Basado en la infraestructura cloud elegida (AWS Secrets Manager, Azure Key Vault, Google Secret Manager) o una solución on-premise como HashiCorp Vault.",
+              "**Contenido a Almacenar:** API Keys de proveedores de clima, credenciales de base de datos, credenciales de servicios de monitoreo, claves de cifrado.",
+              "**Acceso:** Control de acceso basado en roles (RBAC) con el principio de menor privilegio, integración con el IAM de la plataforma cloud.",
+              "**Rotación:** Configuración de rotación automática de claves y credenciales según las políticas de seguridad (ej. cada 90 días).",
+              "**Auditoría:** Registro completo de todos los accesos y modificaciones a los secretos."
+            ]
+          },
+          "Revision_Calidad_Seguridad": {
+            "secrets_hardcodeados": "NO. Se implementará una bóveda de secretos.",
+            "principio_menor_privilegio": "SÍ. Aplicado en la Matriz de Roles y Permisos y en el acceso a la bóveda de secretos.",
+            "datos_cifrados_en_reposo": "SÍ. Se implementará cifrado para datos sensibles de usuario (ubicaciones favoritas) y credenciales de la aplicación."
+          },
+          "Respuestas_Preguntas_Iniciales": {
+            "quienes_acceso_datos_sensibles": "Solo los roles con permisos específicos (Administrador para configuración, Usuario Final para sus propios datos cifrados). Acceso estrictamente basado en el principio de menor privilegio y auditado.",
+            "nivel_cumplimiento_normativo": "Principalmente GDPR debido al manejo de datos de ubicación. Se deben asegurar mecanismos de consentimiento, derecho al olvido y portabilidad de datos. HIPAA no aplica para una app meteorológica estándar.",
+            "gestion_ciclo_vida_api_keys": "Se gestionará a través de la bóveda de secretos: almacenamiento seguro, rotación automática programada, monitoreo de uso y alertas ante accesos inusuales o fallidos."
+          }
+        },
+        "summaryMarkdown": "## Resumen Ejecutivo de Seguridad para la App Meteorológica\n\nComo Tatu, El Guardián, he revisado la misión de crear una aplicación meteorológica desde una perspectiva de seguridad. Mi análisis se centra en establecer una base sólida para proteger la información y garantizar la resiliencia de la aplicación.\n\n### Hallazgos Clave:\n\n1.  **Modelo de Roles y Permisos (RBAC):** Se ha definido una matriz de roles (`Usuario Final`, `Administrador`) con permisos granularizados para asegurar el principio de menor privilegio. Esto es crucial para limitar el acceso a funcionalidades y datos sensibles.\n2.  **Gestión de Secretos:** La exposición de credenciales y API keys es una vulnerabilidad crítica. Se propone la implementación de una bóveda de secretos robusta para almacenar y gestionar de forma segura todas las credenciales y configuraciones sensibles, eliminando el riesgo de hardcoding.\n3.  **Protección de Datos:** Los datos sensibles de usuario, como las ubicaciones favoritas, deben ser cifrados tanto en reposo como en tránsito. Esto es fundamental para cumplir con las normativas de privacidad como GDPR.\n4.  **Vulnerabilidades Comunes:** Se han identificado riesgos potenciales como la falta de validación de entradas, la gestión débil de sesiones y la exposición de credenciales, ofreciendo mitigaciones proactivas.\n\n### Conclusión:\n\nLa implementación de estas medidas de seguridad desde las primeras etapas del desarrollo es vital. Un enfoque proactivo en IAM, gestión de secretos y protección de datos no solo protege la aplicación y a sus usuarios, sino que también reduce significativamente el riesgo de incidentes de seguridad a largo plazo. La aplicación de un análisis de vulnerabilidades estático (SAST) y dinámico (DAST) será esencial antes de cualquier pase a producción para validar estas implementaciones.",
+        "todoMarkdown": "### Próximos Pasos de Seguridad:\n- **Implementar Matriz de Roles y Permisos (RBAC):** Desarrollar la lógica de autenticación y autorización siguiendo la matriz definida para 'Usuario Final' y 'Administrador'.\n- **Integrar Bóveda de Secretos:** Seleccionar e integrar una solución de gestión de secretos (ej. AWS Secrets Manager, Azure Key Vault, HashiCorp Vault) para todas las API Keys, credenciales de BD y otras configuraciones sensibles.\n- **Garantizar Cifrado de Datos:** Implementar cifrado en reposo para bases de datos (especialmente para ubicaciones favoritas y datos de perfil de usuario) y asegurar que todas las comunicaciones utilicen TLS/SSL.\n- **Desarrollar Estrategia de Validación de Entradas:** Implementar validación robusta de entradas en el frontend y backend para prevenir ataques de inyección (SQLi, XSS).\n- **Fortalecer Autenticación y Gestión de Sesiones:** Asegurar tokens de sesión seguros, expiración adecuada y considerar MFA para usuarios administrativos.\n- **Realizar Análisis de Seguridad (SAST/DAST):** Ejecutar herramientas de análisis de seguridad estático y dinámico en el código base para identificar y remediar vulnerabilidades antes del despliegue.\n- **Establecer Plan de Respuesta a Incidentes:** Documentar un plan claro sobre cómo manejar y responder a posibles incidentes de seguridad."
+      },
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/4/pdf"
     },
     {
       "step": 5,
