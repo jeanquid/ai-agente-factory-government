@@ -52,7 +52,7 @@ export const AgentOrchestration: React.FC = () => {
         setRunState(null);
         addLog('system', `${t('initializingFactory')} "${mission}"`, 'info');
 
-        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-2.5-flash';
+        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-1.5-flash';
         try {
             const res = await fetch('/api/runs/start', {
                 method: 'POST',
@@ -91,7 +91,7 @@ export const AgentOrchestration: React.FC = () => {
             return { ...prev, steps: newSteps };
         });
 
-        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-2.5-flash';
+        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-1.5-flash';
         try {
             const res = await fetch(`/api/runs/${runState.runId}/steps/${stepNum}/execute`, {
                 method: 'POST',

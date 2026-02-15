@@ -14,12 +14,8 @@ function getPrimaryModel(req) {
     const headerModel = req?.headers?.['x-ai-model'];
     if (headerModel) return headerModel;
 
-    // 2. From environment
-    const envModel = process.env.GEMINI_MODEL;
-    if (envModel) return envModel;
-
     // 3. Default
-    return "gemini-2.5-flash";
+    return "gemini-1.5-flash";
 }
 
 /**
@@ -52,9 +48,8 @@ async function generateWithFallback(genAI, systemPrompt, primaryModel) {
     // Try primary model first, then standard fallbacks
     const modelsToTry = Array.from(new Set([
         primaryModel,
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
         "gemini-pro"
     ]));
 
@@ -115,7 +110,7 @@ export async function executeAgent(agentId, runState, previousSteps, req) {
     if (!agent) throw new Error(`Agent ${agentId} not found`);
 
     const primaryModel = getPrimaryModel(req);
-    console.log(`[Agent Runner] Executing ${agentId} with model: ${primaryModel}`);
+    console.log(`[Agent Runner] Executing ${agentId}. Header Model: ${req?.headers?.['x-ai-model'] || 'none'}. Selected: ${primaryModel}`);
 
     // SPECIAL HANDLING FOR LUCAS - CODE GENERATION
     if (agentId === 'lucas') {

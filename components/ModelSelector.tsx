@@ -3,50 +3,42 @@ import { Zap, DollarSign, Check, AlertCircle } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
     {
-        id: 'gemini-2.5-flash',
-        name: 'Gemini 2.5 Flash',
+        id: 'gemini-1.5-flash',
+        name: 'Gemini 1.5 Flash',
         provider: 'google',
         speed: 3,
         cost: 1,
-        description: 'Más rápido y económico',
+        description: 'Más rápido y económico (Recomendado)',
         recommended: true
     },
     {
-        id: 'gemini-2.5-pro',
-        name: 'Gemini 2.5 Pro',
+        id: 'gemini-1.5-pro',
+        name: 'Gemini 1.5 Pro',
         provider: 'google',
         speed: 2,
         cost: 3,
         description: 'Más potente para tareas complejas'
     },
     {
-        id: 'gemini-flash',
-        name: 'Gemini Flash (Auto)',
-        provider: 'google',
-        speed: 3,
-        cost: 1,
-        description: 'Siempre usa la última versión Flash'
-    },
-    {
         id: 'gemini-pro',
-        name: 'Gemini Pro (Auto)',
+        name: 'Gemini Pro',
         provider: 'google',
         speed: 2,
         cost: 2,
-        description: 'Siempre usa la última versión Pro'
+        description: 'Modelo balanceado estándar'
     },
     {
-        id: 'claude-3-5-sonnet-20240620', // Using a valid/current Claude ID
+        id: 'claude-3-5-sonnet-20240620',
         name: 'Claude Sonnet 3.5',
         provider: 'anthropic',
         speed: 2,
         cost: 4,
-        description: 'Fallback premium (requiere API key)'
+        description: 'Modelo Premium con alta precisión'
     }
 ];
 
 export function ModelSelector({ compact = false }: { compact?: boolean }) {
-    const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+    const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
     const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);

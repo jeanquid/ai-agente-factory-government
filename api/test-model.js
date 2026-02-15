@@ -10,14 +10,15 @@ export default async function handler(req, res) {
     }
 
     const { model: modelId } = req.body;
+    const modelToTest = modelId || 'gemini-1.5-flash';
 
-    if (!modelId) {
+    if (!modelToTest) {
         return res.status(400).json({ ok: false, message: 'Missing model ID' });
     }
 
     try {
         // 1. Anthropic/Claude Check (Simulated or implemented if key exists)
-        if (modelId.startsWith('claude-')) {
+        if (modelToTest.startsWith('claude-')) {
             const anthropicKey = process.env.ANTHROPIC_API_KEY;
             if (!anthropicKey) {
                 return res.status(400).json({
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
             // Basic ping to Anthropic (optional implementation)
             return res.status(200).json({
                 ok: true,
-                model: modelId,
+                model: modelToTest,
                 message: 'Claude API configurada correctamente.'
             });
         }
@@ -38,10 +39,10 @@ export default async function handler(req, res) {
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Missing Gemini/Google API key in environment');
 
-        console.log(`[Test Model] Testing connectivity for: ${modelId}`);
+        console.log(`[Test Model] Testing connectivity for: ${modelToTest}`);
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: modelId });
+        const model = genAI.getGenerativeModel({ model: modelToTest });
 
         // Simple prompt to verify connection
         const result = await model.generateContent({
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
         if (text.includes('OK')) {
             res.status(200).json({
                 ok: true,
-                model: modelId,
+                model: modelToTest,
                 timestamp: new Date().toISOString()
             });
         } else {
@@ -63,7 +64,7 @@ export default async function handler(req, res) {
         }
 
     } catch (error) {
-        console.error(`[Test Model] Connection failed for ${modelId}:`, error);
+        console.error(`[Test Model] Connection failed for ${modelToTest}:`, error);
         res.status(500).json({
             ok: false,
             model: modelId,
