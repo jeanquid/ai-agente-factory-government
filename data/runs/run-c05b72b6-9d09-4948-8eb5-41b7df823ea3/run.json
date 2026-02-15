@@ -18,8 +18,7 @@
     {
       "step": 1,
       "agentId": "javier",
-      "status": "failed",
-      "error": "Quota / rate limit error"
+      "status": "running"
     },
     {
       "step": 2,
