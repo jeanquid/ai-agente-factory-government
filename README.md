@@ -29,10 +29,16 @@ This version implements a **manual "Read & Continue" workflow** where each step 
    Create `.env.local`:
    ```bash
    GEMINI_API_KEY=your_gemini_api_key
-   GEMINI_MODEL=gemini-2.5-flash # Optional, default
+   GEMINI_MODEL=gemini-2.5-flash # Recommended value
    ```
 
-3. **Run the app:**
+3. **Model Diagnostics (Production/Local):**
+   You can verify which models are available to your API key by calling:
+   - `GET /api/debug-models`
+   
+   This returns a JSON list of models that support `generateContent`.
+
+4. **Run the app:**
    ```bash
    npm run dev
    # or

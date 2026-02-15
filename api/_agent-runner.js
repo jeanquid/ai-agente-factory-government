@@ -1,72 +1,73 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { agents } from './_data.js';
 
-// Configuration: Updated for 2025-2026 Model Support
-// Primary model target: Gemini 2.5 Flash
-const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+// Configuration: Updated for Senior Backend Requirements (2025-2026)
+const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-// List of fallbacks to try in order.
-// We prioritize the 2.5 series, then 2.0, and keep 1.5/1.0 as last resorts if still available/supported.
+// Conservative list likely to exist for generateContent
 const FALLBACK_MODELS = [
-    "gemini-1.5-pro",      // Powerful fallback
-    "gemini-2.0-flash-exp", // Alias check
-    "gemini-2.0-flash",    // Previous stable flash
-    "gemini-1.5-flash",    // Deprecated but might work for legacy keys
-    "gemini-pro"           // Legacy stable
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite", // If available
+    "gemini-2.5-pro"        // If available
 ];
 
 /**
  * Executes a prompt against Gemini with automatic fallback to secondary models
  * if the primary one returns a 404 (Not Found) error.
+ * Includes senior-level error classification for 401, 403, 429.
  */
 async function generateWithFallback(genAI, systemPrompt) {
     const tryModel = async (modelName) => {
         console.log(`[Gemini] Attempting generation with model: ${modelName}`);
-        try {
-            // SDK v0.12.0+ handles API versioning, but we default to what the SDK uses (usually v1beta for newer models)
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const result = await model.generateContent(systemPrompt);
-            const response = await result.response;
-            return response.text();
-        } catch (error) {
-            // Throw object to preserve context
-            throw { model: modelName, originalError: error };
-        }
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(systemPrompt);
+        const response = await result.response;
+        return response.text();
     };
 
-    // 1. Try Primary
-    try {
-        return await tryModel(PRIMARY_MODEL);
-    } catch (err) {
-        const errorMsg = err.originalError?.message || String(err.originalError);
-        const isNotFound = errorMsg.includes("not found") || errorMsg.includes("404");
+    const modelsToTry = Array.from(new Set([PRIMARY_MODEL, ...FALLBACK_MODELS]));
+    let lastError = null;
 
-        // If not a 404 error (e.g. rate limit, quota, invalid API key), rethrow immediately
-        if (!isNotFound) {
-            console.error(`[Gemini] Primary model error (NON-404): ${errorMsg}`);
-            throw err.originalError;
-        }
+    for (const modelName of modelsToTry) {
+        try {
+            return await tryModel(modelName);
+        } catch (error) {
+            const originalError = error.originalError || error;
+            const message = originalError.message || String(originalError);
+            const status = originalError.status || (originalError.response ? originalError.response.status : null);
 
-        console.warn(`[Gemini] Primary model '${PRIMARY_MODEL}' failed (404/NotFound). Starting fallback chain...`);
-
-        // 2. Try Fallbacks
-        let lastError = err;
-        for (const fallbackModel of FALLBACK_MODELS) {
-            if (fallbackModel === PRIMARY_MODEL) continue; // Skip if same
-
-            try {
-                console.log(`[Gemini] Trying fallback: ${fallbackModel}`);
-                return await tryModel(fallbackModel);
-            } catch (fbErr) {
-                console.warn(`[Gemini] Fallback '${fallbackModel}' failed.`);
-                lastError = fbErr;
-                // Continue to next fallback...
+            // 1. Auth / Permissions / Region (401, 403)
+            if (status === 401 || status === 403 || message.includes("401") || message.includes("403") || message.includes("API_KEY") || message.includes("permission")) {
+                console.error(`[Gemini] Authentication/Permission Error: ${message}`);
+                throw { ok: false, error: "API key / permissions / region error", details: message, status: 403 };
             }
-        }
 
-        // If all fail
-        throw new Error(`All Gemini models failed. Last error from ${lastError.model}: ${lastError.originalError?.message || lastError}`);
+            // 2. Quota / Rate Limit (429)
+            if (status === 429 || message.includes("429") || message.includes("quota") || message.includes("limit")) {
+                console.error(`[Gemini] Quota/Rate Limit Error: ${message}`);
+                throw { ok: false, error: "Quota / rate limit error", details: message, status: 429 };
+            }
+
+            // 3. Not Found / Not Supported (404) -> Fallback
+            if (status === 404 || message.includes("404") || message.includes("not found") || message.includes("not supported") || message.includes("Model not found")) {
+                console.warn(`[Gemini] Model '${modelName}' not found or unsupported. Trying next fallback...`);
+                lastError = { model: modelName, message };
+                continue;
+            }
+
+            // 4. Other Errors
+            console.error(`[Gemini] Unexpected error with model ${modelName}:`, message);
+            throw { ok: false, error: "Model execution failed", details: message, status: 500 };
+        }
     }
+
+    // If we exhausted all models
+    throw {
+        ok: false,
+        error: "All models failed (Not Found / Unsupported)",
+        details: lastError ? `Last tried ${lastError.model}: ${lastError.message}` : "No fallbacks succeeded",
+        status: 404
+    };
 }
 
 export async function executeAgent(agentId, runState, previousSteps) {
@@ -149,6 +150,16 @@ export async function executeAgent(agentId, runState, previousSteps) {
 
     } catch (error) {
         console.error(`[Agent Runner] Error executing agent ${agentId}:`, error);
-        throw new Error(`Agent execution failed: ${error.message}`);
+
+        // If it's already a structured error, rethrow it
+        if (error.ok === false) throw error;
+
+        // Otherwise, wrap it
+        throw {
+            ok: false,
+            error: "Agent execution failed",
+            details: error.message || String(error),
+            status: 500
+        };
     }
 }

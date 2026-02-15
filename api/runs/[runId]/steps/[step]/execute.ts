@@ -109,10 +109,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Safe update attempt
             if (run.steps[stepNum - 1]) {
                 run.steps[stepNum - 1].status = 'failed';
-                run.steps[stepNum - 1].error = error.message;
+                run.steps[stepNum - 1].error = error.error || error.message || 'Internal Error';
             }
         });
 
-        res.status(500).json({ error: error.message, state: failedRun });
+        const status = error.status || 500;
+        res.status(status).json({
+            ok: false,
+            error: error.error || 'Server Error',
+            details: error.details || error.message || String(error),
+            state: failedRun
+        });
     }
 }

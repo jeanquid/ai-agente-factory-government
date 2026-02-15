@@ -145,6 +145,11 @@ export default async function handler(
 
     } catch (error: any) {
         console.error("Step execution failed:", error);
-        res.status(500).json({ error: error.message || 'Internal Error' });
+        const status = error.status || 500;
+        res.status(status).json({
+            ok: false,
+            error: error.error || 'Server Error',
+            details: error.details || error.message || String(error)
+        });
     }
 }
