@@ -1,6 +1,26 @@
 {
     "rewrites": [
         {
+            "source": "/api/runs/:runId/next",
+            "destination": "/api/runs/[runId]/next.ts"
+        },
+        {
+            "source": "/api/runs/:runId/steps/:step/execute",
+            "destination": "/api/runs/[runId]/steps/[step]/execute.ts"
+        },
+        {
+            "source": "/api/runs/:runId/steps/:step/confirm-read",
+            "destination": "/api/runs/[runId]/steps/[step]/confirm-read.ts"
+        },
+        {
+            "source": "/api/runs/:runId/steps/:step/pdf",
+            "destination": "/api/runs/[runId]/steps/[step]/pdf.ts"
+        },
+        {
+            "source": "/api/runs/:runId",
+            "destination": "/api/runs/[runId]/index.ts"
+        },
+        {
             "source": "/api/(.*)",
             "destination": "/api/$1"
         },
