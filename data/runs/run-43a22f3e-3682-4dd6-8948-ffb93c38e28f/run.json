@@ -1,0 +1,44 @@
+{
+  "runId": "43a22f3e-3682-4dd6-8948-ffb93c38e28f",
+  "tenantId": "default",
+  "mission": "crea una app",
+  "createdAt": "2026-02-15T02:53:26.964Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
