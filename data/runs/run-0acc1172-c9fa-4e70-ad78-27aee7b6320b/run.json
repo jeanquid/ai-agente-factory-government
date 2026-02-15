@@ -363,7 +363,161 @@
     {
       "step": 5,
       "agentId": "agustina",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T13:47:23.953Z",
+      "deliverables": {
+        "outputJson": {
+          "appName": "ClimaPro: Tu Asistente Meteorológico Inteligente",
+          "valuePropositionCanvas": {
+            "customerSegment": {
+              "customerJobs": [
+                "Obtener información meteorológica precisa y actualizada para la planificación diaria y futura.",
+                "Evitar sorpresas climáticas que afecten actividades personales o profesionales.",
+                "Garantizar la seguridad en viajes o actividades al aire libre.",
+                "Optimizar decisiones basadas en el clima (ej. agricultura, logística, eventos)."
+              ],
+              "pains": [
+                "Pronósticos inexactos o desactualizados.",
+                "Interfaces de usuario complejas o poco intuitivas.",
+                "Falta de datos hiperlocales o personalizados.",
+                "Alertas tardías o irrelevantes.",
+                "Dependencia de múltiples fuentes para obtener información completa."
+              ],
+              "gains": [
+                "Tomar decisiones informadas con confianza.",
+                "Ahorrar tiempo en la búsqueda de información climática.",
+                "Mejorar la seguridad personal y la eficiencia operativa.",
+                "Disfrutar de tranquilidad al anticipar cambios climáticos.",
+                "Optimizar recursos y reducir riesgos asociados al clima."
+              ]
+            },
+            "valueProposition": {
+              "productsAndServices": [
+                "ClimaPro: App móvil intuitiva con pronósticos en tiempo real y a largo plazo.",
+                "Datos hiperlocales y personalizados (temperatura, humedad, viento, precipitaciones, calidad del aire, UV, etc.).",
+                "Alertas personalizables (lluvia inminente, cambios bruscos de temperatura, fenómenos extremos).",
+                "Mapas interactivos y radares meteorológicos.",
+                "Historial climático y tendencias."
+              ],
+              "painRelievers": [
+                "Algoritmos avanzados para pronósticos de alta precisión y actualización constante.",
+                "Diseño UX/UI centrado en la facilidad de uso y la claridad de la información.",
+                "Personalización de datos por ubicación y preferencias del usuario.",
+                "Notificaciones push instantáneas y configurables.",
+                "Consolidación de toda la información climática relevante en una sola plataforma."
+              ],
+              "gainCreators": [
+                "Permite una planificación proactiva y estratégica (personal y profesional).",
+                "Ofrece insights accionables para optimizar actividades y recursos.",
+                "Aumenta la seguridad al alertar sobre condiciones peligrosas con antelación.",
+                "Proporciona una ventaja competitiva para negocios dependientes del clima.",
+                "Genera ahorro de costos al prevenir pérdidas o ineficiencias causadas por el clima."
+              ]
+            }
+          },
+          "salesAndMarketingKit": {
+            "pressReleaseDraft": {
+              "headline": "ClimaPro Lanza su Innovadora App Meteorológica: Precisión, Personalización y Proactividad al Alcance de Tu Mano",
+              "subtitle": "La nueva aplicación ClimaPro redefine la forma en que interactuamos con el clima, ofreciendo pronósticos hiperlocales, alertas inteligentes y una experiencia de usuario sin precedentes para individuos y empresas.",
+              "bodySnippet": "Buenos Aires, [Fecha] – ClimaPro anuncia hoy el lanzamiento oficial de su aplicación meteorológica de vanguardia, diseñada para transformar la forma en que los usuarios acceden y utilizan la información del clima. Con una interfaz intuitiva y algoritmos predictivos avanzados, ClimaPro se posiciona como la herramienta esencial para la planificación diaria, la seguridad y la optimización de negocios en sectores críticos.",
+              "boilerplate": "Sobre ClimaPro: ClimaPro es una startup dedicada a democratizar el acceso a información meteorológica de alta precisión. Nuestra misión es empoderar a individuos y empresas con datos climáticos fiables y accionables para mejorar la toma de decisiones y la calidad de vida."
+            },
+            "salesDeckOutline": {
+              "slides": [
+                {
+                  "title": "Introducción: El Desafío del Clima Incierto",
+                  "content": "Problemas actuales con la información meteorológica: inexactitud, complejidad, falta de personalización."
+                },
+                {
+                  "title": "Presentamos ClimaPro: Tu Asistente Meteorológico Inteligente",
+                  "content": "Solución integral para pronósticos precisos, hiperlocales y alertas proactivas."
+                },
+                {
+                  "title": "Características Clave",
+                  "content": "Pronósticos en tiempo real, alertas personalizables, mapas interactivos, calidad del aire, historial."
+                },
+                {
+                  "title": "Beneficios para el Usuario",
+                  "content": "Ahorro de tiempo, seguridad mejorada, decisiones informadas, tranquilidad."
+                },
+                {
+                  "title": "ROI para Empresas (B2B)",
+                  "content": "Reducción de pérdidas, optimización de operaciones, planificación estratégica, ventaja competitiva."
+                },
+                {
+                  "title": "Modelos de Suscripción",
+                  "content": "Freemium (Básico), Premium (Funciones avanzadas), Enterprise (API, Dashboards personalizados)."
+                },
+                {
+                  "title": "Casos de Uso",
+                  "content": "Agricultura, Logística, Eventos, Turismo, Construcción."
+                },
+                {
+                  "title": "Llamada a la Acción",
+                  "content": "Descarga la app / Solicita una demo B2B / Contáctanos para más información."
+                }
+              ]
+            }
+          },
+          "coldEmailOutreachTemplate": {
+            "subject": "Mejora tu Planificación con Pronósticos Meteorológicos de Precisión Extrema",
+            "body": "Hola [Nombre del Prospecto],\n\nSabemos que la incertidumbre climática puede generar desafíos significativos en [Mencionar industria del prospecto, ej. la gestión de tus cultivos / la planificación de tus eventos / la logística de tus entregas]. ¿Cuántas veces un pronóstico erróneo ha impactado negativamente tus operaciones o tu día a día?\n\nEn ClimaPro, hemos desarrollado una aplicación meteorológica que ofrece pronósticos hiperlocales con una precisión sin precedentes y alertas personalizables. Imagina poder anticipar con confianza los cambios climáticos y tomar decisiones proactivas que [Mencionar beneficio específico, ej. protejan tu inversión / aseguren el éxito de tu evento / optimicen tus rutas].\n\nNos encantaría mostrarte cómo ClimaPro puede ayudarte a [Mencionar ROI o beneficio clave]. ¿Estarías disponible para una breve llamada de 15 minutos la próxima semana para una demostración personalizada?\n\nSaludos,\n[Tu Nombre/Tuyuyu] - ClimaPro"
+          },
+          "salesDemoFlowScript": {
+            "stages": [
+              {
+                "stage": "1. Introducción y Rompehielos",
+                "description": "Presentación breve, establecer rapport. 'Gracias por tu tiempo, mi nombre es [Tu Nombre] de ClimaPro. ¿Cómo te encuentras hoy?'"
+              },
+              {
+                "stage": "2. Descubrimiento de Necesidades (Problem Discovery)",
+                "description": "Hacer preguntas abiertas para entender los 'dolores' del prospecto relacionados con el clima. '¿Cuáles son los mayores desafíos que enfrentas actualmente con la información meteorológica?' '¿Qué impacto tienen los cambios climáticos inesperados en tu operación/vida diaria?'"
+              },
+              {
+                "stage": "3. Presentación de la Solución (Demo)",
+                "description": "Mostrar la app, enfocándose en las características que resuelven los problemas identificados. 'Basado en lo que me comentas, nuestra función de [Característica X] sería ideal para [Beneficio Y]. Permíteme mostrarte...' (Demostrar funcionalidades clave: pronósticos, alertas, mapas, personalización)."
+              },
+              {
+                "stage": "4. Resaltar Beneficios y ROI",
+                "description": "Conectar las características con los beneficios y el retorno de inversión. 'Al usar ClimaPro, no solo obtendrás pronósticos precisos, sino que podrás [Beneficio Z], lo que se traduce en [ROI específico, ej. X% de ahorro / reducción de Y riesgos].'"
+              },
+              {
+                "stage": "5. Preguntas y Objeciones",
+                "description": "Abrir espacio para dudas y objeciones. '¿Qué te parece? ¿Tienes alguna pregunta hasta ahora?' 'Entiendo tu preocupación sobre [Objeción], permíteme explicarte cómo la abordamos.'"
+              },
+              {
+                "stage": "6. Próximos Pasos y Cierre",
+                "description": "Definir claramente los siguientes pasos. 'Para avanzar, ¿te gustaría que te enviemos una propuesta personalizada / una prueba gratuita / agendemos una reunión con tu equipo?' '¿Qué te gustaría que fuera el siguiente paso?'"
+              }
+            ]
+          },
+          "startupQuestionsAnswered": {
+            "mainPainPoint": "La incertidumbre y la falta de información meteorológica precisa y personalizada, que lleva a decisiones subóptimas, incomodidad o incluso riesgos económicos y personales.",
+            "economicBuyer": {
+              "b2c": "Usuarios individuales que valoran la comodidad, la precisión y la anticipación, dispuestos a pagar por versiones premium (sin anuncios, funciones avanzadas).",
+              "b2b": "Empresas en sectores altamente dependientes del clima (agricultura, logística, turismo, eventos, construcción, energía) que necesitan datos precisos para optimizar operaciones, reducir riesgos y mejorar la planificación estratégica."
+            },
+            "clientSuccessMetrics": {
+              "b2c": [
+                "Precisión de los pronósticos (medida por encuestas de satisfacción o comparativas).",
+                "Número de alertas útiles y oportunas recibidas.",
+                "Ahorro de tiempo en la planificación diaria.",
+                "Sentimiento de seguridad y tranquilidad mejorados."
+              ],
+              "b2b": [
+                "Reducción de pérdidas o interrupciones operativas debido a eventos climáticos adversos.",
+                "Optimización de rutas, horarios o recursos basada en pronósticos.",
+                "Mejora en la toma de decisiones estratégicas (ej. siembra, logística de eventos).",
+                "ROI claro sobre la inversión en la suscripción/API de ClimaPro."
+              ]
+            }
+          },
+          "pricingValidationNotes": "Se propone un modelo freemium para B2C y suscripciones/API para B2B. La validación conceptual indica que los prospectos B2B valoran la precisión y la personalización, y estarían dispuestos a pagar por un ROI demostrable en eficiencia y reducción de riesgos. Para B2C, la propuesta de valor debe enfocarse en la comodidad y la anticipación, con un precio accesible para la versión premium. Se recomienda realizar entrevistas reales con al menos 3 prospectos de cada segmento para afinar la estructura de precios y las características premium."
+        },
+        "summaryMarkdown": "## Estrategia de Go-to-Market para ClimaPro: Tu Asistente Meteorológico Inteligente\n\nComo Tuyuyu, he desarrollado la estrategia inicial de marketing y ventas para la aplicación meteorológica ClimaPro. El enfoque se centra en resolver el **dolor principal** de la incertidumbre climática a través de pronósticos precisos, hiperlocales y alertas personalizadas. Hemos definido los segmentos de **compradores económicos** (B2C y B2B) y las **métricas de éxito** que les importan, destacando el ROI para el segmento empresarial.\n\nSe ha creado un **Kit de Ventas y Prensa** que incluye un borrador de comunicado de prensa y un esquema para el deck de ventas, enfatizando los beneficios y el valor añadido de ClimaPro. Además, se ha diseñado una plantilla de **email de prospección en frío** y un **flujo para demostraciones de venta** para guiar las interacciones con prospectos.\n\nLa **propuesta de valor** se articula en torno a la precisión, la personalización y la proactividad, buscando aliviar los puntos de dolor de los usuarios y generar ganancias tangibles. La validación del pricing sugiere un modelo freemium para consumidores y suscripciones/API para empresas, con la recomendación de una validación real con prospectos.",
+        "todoMarkdown": "Actionable steps:\n- 1. Finalizar el diseño del material de marketing (deck de ventas, landing page) basado en el esquema.\n- 2. Identificar y segmentar una lista inicial de 50 prospectos B2B (ej. agricultura, logística, eventos).\n- 3. Ejecutar una campaña piloto de cold outreach utilizando el template y medir la tasa de apertura y respuesta.\n- 4. Realizar al menos 5 demos de venta aplicando el flujo definido y recopilar feedback inicial.\n- 5. Diseñar y ejecutar una encuesta de mercado para validar el pricing propuesto con al menos 3 prospectos B2C y 3 B2B reales."
+      },
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/5/pdf"
     },
     {
       "step": 6,
