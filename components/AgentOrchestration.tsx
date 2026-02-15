@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { agents } from '../api/_data';
-import { RunState, RunStep } from '../api/types';
+import { RunState, RunStep } from '../api/_types';
 import {
     Play,
     CheckCircle,
