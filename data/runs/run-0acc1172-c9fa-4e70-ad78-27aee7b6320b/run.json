@@ -523,7 +523,8 @@
     {
       "step": 6,
       "agentId": "lucas",
-      "status": "running"
+      "status": "failed",
+      "error": "Code generation failed: ENOENT: no such file or directory, mkdir '/var/task/public/outputs'"
     }
   ],
   "artifacts": []
