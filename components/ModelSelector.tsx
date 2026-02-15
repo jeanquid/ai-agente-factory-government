@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, DollarSign, Check, AlertCircle } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
@@ -99,8 +99,8 @@ export function ModelSelector() {
                         key={model.id}
                         onClick={() => handleModelChange(model.id)}
                         className={`w-full text-left p-3 rounded-lg transition-all duration-200 border ${selectedModel === model.id
-                                ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/10'
-                                : 'bg-slate-800/40 border-transparent hover:border-slate-700 hover:bg-slate-800/60'
+                            ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/10'
+                            : 'bg-slate-800/40 border-transparent hover:border-slate-700 hover:bg-slate-800/60'
                             }`}
                     >
                         <div className="flex items-start justify-between">
