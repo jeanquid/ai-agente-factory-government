@@ -6,9 +6,10 @@ const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 // Conservative list likely to exist for generateContent
 const FALLBACK_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite", // If available
-    "gemini-2.5-pro"        // If available
+    "gemini-2.5-pro",
+    "gemini-flash",
+    "gemini-pro",
+    "gemini-2.5-flash-lite"
 ];
 
 /**
@@ -19,7 +20,15 @@ const FALLBACK_MODELS = [
 async function generateWithFallback(genAI, systemPrompt) {
     const tryModel = async (modelName) => {
         console.log(`[Gemini] Attempting generation with model: ${modelName}`);
-        const model = genAI.getGenerativeModel({ model: modelName });
+        const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 8192,
+            }
+        });
         const result = await model.generateContent(systemPrompt);
         const response = await result.response;
         return response.text();
@@ -90,28 +99,50 @@ export async function executeAgent(agentId, runState, previousSteps) {
     }));
 
     const systemPrompt = `
-    You are ${agent.name}, acting as ${agent.role}.
-    Your mission is: ${runState.mission}.
-    
-    GOAL:
-    Execute your specific tasks as part of this mission, building upon the work of previous agents.
-    
-    CONTEXT FROM PREVIOUS AGENTS:
-    ${JSON.stringify(context, null, 2)}
-    
-    YOUR AGENT PROFILE:
-    ${JSON.stringify(agent, null, 2)}
-    
-    OUTPUT REQUIREMENTS:
-    You must return a SINGLE JSON object. No markdown formatting around it (i.e. DO NOT wrap with \`\`\`json).
-    The keys must be:
-    - "outputJson": A structured object containing the artifacts/data you produced.
-    - "summaryMarkdown": A clear, executive summary of what you did and your findings (in Markdown).
-    - "todoMarkdown": A markdown list of actionable next steps, risks, or follow-up items.
-    
-    Ensure "outputJson" is rich and detailed, matching your capabilities.
-    Ensure "todoMarkdown" is clear and actionable.
-    `;
+You are ${agent.name}, acting as ${agent.role}.
+Your mission is: ${runState.mission}.
+
+GOAL:
+Execute your specific tasks as part of this mission, building upon the work of previous agents.
+
+CONTEXT FROM PREVIOUS AGENTS:
+${JSON.stringify(context, null, 2)}
+
+YOUR AGENT PROFILE:
+${JSON.stringify(agent, null, 2)}
+
+CRITICAL OUTPUT REQUIREMENTS - READ CAREFULLY:
+
+You MUST respond with ONLY a valid JSON object. Your response must:
+1. Start with { and end with }
+2. Contain NO text before or after the JSON
+3. Contain NO markdown code fences (no \`\`\`json or \`\`\`)
+4. Contain NO explanations or commentary
+5. Be valid, parseable JSON
+
+The JSON object MUST contain these three keys (all required):
+
+{
+  "outputJson": {
+    // Structured object with your work artifacts/data
+  },
+  "summaryMarkdown": "Executive summary in Markdown with ## headers",
+  "todoMarkdown": "Actionable steps:\\n- Item 1\\n- Item 2"
+}
+
+EXAMPLE VALID RESPONSE:
+{
+  "outputJson": {
+    "projectName": "Meteorite Tracker",
+    "features": ["Real-time tracking", "Historical data"],
+    "techStack": ["React", "Node.js"]
+  },
+  "summaryMarkdown": "## Analysis\\n\\nComprehensive meteorite tracking app plan.",
+  "todoMarkdown": "- Setup environment\\n- Create schema\\n- Build API"
+}
+
+Execute your role as ${agent.name} and respond with the JSON object.
+`;
 
     try {
         // Execute with fallback logic

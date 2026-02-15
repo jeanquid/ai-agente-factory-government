@@ -115,7 +115,7 @@ export default async function handler(
       ${JSON.stringify(rulesToUse, null, 2)}
     `;
 
-        const modelName = 'gemini-2.0-flash';
+        const modelName = 'gemini-2.5-flash';
         const model = genAI.getGenerativeModel({ model: modelName });
 
         // Call Gemini API
