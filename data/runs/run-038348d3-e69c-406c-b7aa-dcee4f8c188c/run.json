@@ -11,7 +11,7 @@
       "damian",
       "agustina"
     ],
-    "currentStep": 2
+    "currentStep": 3
   },
   "steps": [
     {
@@ -150,7 +150,7 @@
     {
       "step": 3,
       "agentId": "martin",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T03:26:11.360Z",
       "deliverables": {
         "outputJson": {
@@ -296,7 +296,8 @@
         "summaryMarkdown": "## Resumen de la Orquestación Técnica para la App de Citas\n\nComo 'El Plomero', he diseñado la arquitectura de orquestación técnica para la aplicación de citas, conectando la lógica de negocio (asumida de Javier) con la persistencia de datos (Fabricio) y los servicios externos. Se han definido cuatro flujos de trabajo clave en n8n:\n\n1.  **Registro y Perfil de Usuario**: Maneja la creación de cuentas, almacenamiento de datos y carga de fotos a AWS S3.\n2.  **Búsqueda y Matching de Perfiles**: Procesa la lógica para encontrar usuarios compatibles.\n3.  **Envío de Mensajes y Notificaciones**: Gestiona la comunicación entre usuarios y dispara alertas.\n4.  **Gestión de Notificaciones Push/Email**: Centraliza el envío de notificaciones a través de FCM y SendGrid.\n\nEstos flujos se integrarán con una base de datos PostgreSQL (provista por Fabricio), servicios de correo electrónico (SendGrid), almacenamiento de archivos (AWS S3) y notificaciones push (Firebase Cloud Messaging). Se ha puesto un énfasis particular en el manejo robusto de errores, incluyendo lógica de reintento, monitoreo y alertas en Slack para asegurar la fiabilidad del servicio y cumplir con los estándares de calidad.",
         "todoMarkdown": "### Próximos Pasos para Martín:\n\n-   **Configuración Inicial:**\n    -   Configurar una instancia de n8n y asegurar el acceso.\n    -   Definir y cargar las credenciales necesarias (DB, SendGrid, AWS S3, FCM, Slack) como variables de entorno seguras en n8n.\n-   **Desarrollo de Workflows:**\n    -   Implementar el workflow 'Registro y Perfil de Usuario' en n8n, incluyendo la validación de datos y la integración con la base de datos de Fabricio y AWS S3 para fotos.\n    -   Crear el workflow 'Búsqueda y Matching de Perfiles', conectando con la base de datos para recuperar y procesar perfiles.\n    -   Desarrollar el workflow 'Envío de Mensajes y Notificaciones', asegurando la validación de matches y el almacenamiento de mensajes.\n    -   Construir el workflow 'Gestión de Notificaciones Push/Email' para disparar alertas a través de FCM y SendGrid.\n-   **Manejo de Errores y Calidad:**\n    -   Integrar manejo de errores (Try/Catch) en cada workflow crítico.\n    -   Configurar un workflow global de manejo de errores y notificaciones de Slack para fallos.\n    -   Añadir lógica de reintento para las llamadas a APIs externas.\n-   **Pruebas:**\n    -   Realizar pruebas de integración end-to-end para cada workflow y sus endpoints asociados.\n    -   Documentar los workflows de n8n con descripciones claras y ejemplos de payload."
       },
-      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/3/pdf"
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/3/pdf",
+      "readConfirmed": true
     },
     {
       "step": 4,
