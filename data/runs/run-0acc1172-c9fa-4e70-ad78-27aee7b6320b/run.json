@@ -12,13 +12,13 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 0
+    "currentStep": 1
   },
   "steps": [
     {
       "step": 1,
       "agentId": "javier",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T13:32:50.711Z",
       "deliverables": {
         "outputJson": {
@@ -29,7 +29,8 @@
         "summaryMarkdown": "## Planificación Inicial de la Aplicación Meteorológica \"Clima Hoy\"\n\nComo Guyra, 'The Brain', he establecido los cimientos para la aplicación meteorológica. He definido la misión y visión del producto, delineando las características clave y la experiencia de usuario deseada. Se ha creado un diagrama de flujo de usuario preliminar para guiar la interacción principal y se han especificado criterios de aceptación detallados para las funcionalidades esenciales de información meteorológica, gestión de ubicación y experiencia de usuario. Este conjunto de documentos proporciona una base sólida y clara para las siguientes etapas de diseño y desarrollo.",
         "todoMarkdown": "Actionable steps:\n- **Para el Diseñador UX/UI:** Crear wireframes y mockups basados en el Diagrama de Flujo Cognitivo y los Criterios de Aceptación, enfocándose en la interfaz intuitiva y visualmente atractiva.\n- **Para el Arquitecto de Software:** Investigar y seleccionar APIs meteorológicas externas fiables y de alto rendimiento que cumplan con los requisitos de precisión y actualización.\n- **Para el Equipo de Desarrollo:** Empezar a definir la pila tecnológica y la estructura de datos inicial para soportar las funcionalidades básicas de la aplicación, preparando el terreno para la implementación de AC-001 a AC-008."
       },
-      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/1/pdf"
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/1/pdf",
+      "readConfirmed": true
     },
     {
       "step": 2,
