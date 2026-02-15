@@ -12,13 +12,13 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 0
+    "currentStep": 1
   },
   "steps": [
     {
       "step": 1,
       "agentId": "javier",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T05:32:41.284Z",
       "deliverables": {
         "outputJson": {
@@ -52,7 +52,8 @@
         "summaryMarkdown": "## Diseño Conceptual de GeoImpacto: Rastreador de Meteoritos\n\nComo Javier, 'The Brain', he diseñado la arquitectura cognitiva y el propósito central para la aplicación de meteoritos solicitada. La app, tentativamente llamada **GeoImpacto**, tiene como misión principal ofrecer una plataforma intuitiva y científicamente precisa para que los usuarios exploren y visualicen los puntos de impacto confirmados de meteoritos en la Tierra, basándose exclusivamente en datos históricos verificados.\n\nEl flujo cognitivo se ha estructurado para asegurar que la app procese las consultas del usuario, acceda a bases de datos de impactos confirmados y presente la información de manera clara en un mapa interactivo. Se han establecido **reglas estrictas anti-alucinación** para garantizar la veracidad de los datos, prohibiendo la invención de información, la especulación o la predicción de futuros eventos. La precisión es la máxima prioridad, complementada con una interfaz de usuario atractiva para la accesibilidad de los datos.",
         "todoMarkdown": "Actionable steps:\n- **Definir Fuentes de Datos**: Identificar y formalizar las APIs o bases de datos científicas exactas (ej., NASA, The Meteoritical Society) que servirán como fuente primaria de información para los impactos de meteoritos.\n- **Colaboración con Fabricio**: Iniciar la conceptualización del esquema de la base de datos con Fabricio para asegurar que pueda almacenar eficientemente todos los detalles de los impactos (coordenadas, fecha, masa, tipo, nombre, fuente).\n- **Diseño del Prompt de Procesamiento de Datos**: Redactar un 'System Prompt' detallado para el módulo de procesamiento de datos que garantice la estricta adherencia a las reglas anti-alucinación y la validación de la información antes de su presentación.\n- **Prototipado de Flujo de Datos**: Realizar un prototipo conceptual del flujo de datos y la visualización con un conjunto de datos simulados para validar la estrategia de presentación y las reglas de anti-alucinación."
       },
-      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/1/pdf"
+      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/1/pdf",
+      "readConfirmed": true
     },
     {
       "step": 2,
