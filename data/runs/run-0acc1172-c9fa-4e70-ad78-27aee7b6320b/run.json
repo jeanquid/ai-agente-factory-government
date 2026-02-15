@@ -35,7 +35,98 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T13:40:40.734Z",
+      "deliverables": {
+        "outputJson": {
+          "schemaSql": "-- Tenants table (Root entity for multi-tenancy)\nCREATE TABLE tenants (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    name VARCHAR(255) UNIQUE NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);\n\n-- Users table\nCREATE TABLE users (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    tenant_id UUID NOT NULL,\n    username VARCHAR(255) UNIQUE NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    password_hash VARCHAR(255) NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE\n);\nCREATE INDEX idx_users_tenant_id ON users (tenant_id);\n\n-- Locations table\nCREATE TABLE locations (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    tenant_id UUID NOT NULL,\n    name VARCHAR(255) NOT NULL,\n    latitude DECIMAL(9,6) NOT NULL,\n    longitude DECIMAL(9,6) NOT NULL,\n    timezone VARCHAR(255) NOT NULL,\n    country VARCHAR(255),\n    city VARCHAR(255),\n    UNIQUE (tenant_id, latitude, longitude), -- A tenant should not have duplicate locations at the same coordinates\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE\n);\nCREATE INDEX idx_locations_tenant_id ON locations (tenant_id);\n\n-- Weather Observations table (historical data)\nCREATE TABLE weather_observations (\n    id BIGSERIAL PRIMARY KEY,\n    tenant_id UUID NOT NULL,\n    location_id UUID NOT NULL,\n    observation_time TIMESTAMP WITH TIME ZONE NOT NULL,\n    temperature_celsius DECIMAL(5,2),\n    humidity_percent DECIMAL(5,2),\n    wind_speed_kph DECIMAL(5,2),\n    wind_direction_degrees DECIMAL(5,2),\n    pressure_hpa DECIMAL(7,2),\n    precipitation_mm DECIMAL(5,2),\n    weather_condition VARCHAR(255), -- e.g., \"Clear\", \"Cloudy\", \"Rain\"\n    cloud_cover_percent DECIMAL(5,2),\n    uv_index INTEGER,\n    visibility_km DECIMAL(5,2),\n    source VARCHAR(255), -- e.g., \"API_OpenWeather\", \"Sensor_ID_XYZ\"\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,\n    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE\n);\nCREATE INDEX idx_weather_observations_tenant_location_time ON weather_observations (tenant_id, location_id, observation_time DESC);\n\n-- Weather Forecasts table (predicted data)\nCREATE TABLE weather_forecasts (\n    id BIGSERIAL PRIMARY KEY,\n    tenant_id UUID NOT NULL,\n    location_id UUID NOT NULL,\n    forecast_time TIMESTAMP WITH TIME ZONE NOT NULL, -- The time for which the forecast is valid\n    issued_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- When the forecast was generated\n    temperature_celsius_min DECIMAL(5,2),\n    temperature_celsius_max DECIMAL(5,2),\n    humidity_percent DECIMAL(5,2),\n    wind_speed_kph DECIMAL(5,2),\n    wind_direction_degrees DECIMAL(5,2),\n    pressure_hpa DECIMAL(7,2),\n    precipitation_mm DECIMAL(5,2),\n    weather_condition VARCHAR(255),\n    cloud_cover_percent DECIMAL(5,2),\n    uv_index INTEGER,\n    visibility_km DECIMAL(5,2),\n    source VARCHAR(255), -- e.g., \"Model_ECMWF\", \"API_AccuWeather\"\n    model_version VARCHAR(50), -- To track specific model versions if needed\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,\n    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE\n);\nCREATE INDEX idx_weather_forecasts_tenant_location_time ON weather_forecasts (tenant_id, location_id, forecast_time DESC);\n\n-- Alerts table (Requires pgvector extension for vector column)\n-- CREATE EXTENSION IF NOT EXISTS vector;\nCREATE TABLE weather_alerts (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    tenant_id UUID NOT NULL,\n    location_id UUID, -- Can be null if it's a general alert not tied to a specific location\n    alert_type VARCHAR(255) NOT NULL, -- e.g., \"Severe Thunderstorm Warning\", \"Flash Flood Watch\"\n    severity VARCHAR(50) NOT NULL, -- e.g., \"Minor\", \"Moderate\", \"Severe\", \"Extreme\"\n    urgency VARCHAR(50) NOT NULL, -- e.g., \"Immediate\", \"Expected\", \"Future\"\n    event VARCHAR(255) NOT NULL, -- e.g., \"Thunderstorm\", \"Flood\", \"Heatwave\"\n    headline VARCHAR(512),\n    description TEXT NOT NULL,\n    instruction TEXT,\n    start_time TIMESTAMP WITH TIME ZONE NOT NULL,\n    end_time TIMESTAMP WITH TIME ZONE NOT NULL,\n    source VARCHAR(255), -- e.g., \"National Weather Service\"\n    embedding VECTOR(1536), -- Assuming OpenAI text-embedding-ada-002 output dimension\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,\n    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE SET NULL\n);\nCREATE INDEX idx_weather_alerts_tenant_location_time ON weather_alerts (tenant_id, location_id, start_time DESC);\nCREATE INDEX idx_weather_alerts_embedding ON weather_alerts USING HNSW (embedding vector_cosine_ops);\n\n-- User Preferences table (e.g., preferred units, alert thresholds)\nCREATE TABLE user_preferences (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    tenant_id UUID NOT NULL,\n    user_id UUID NOT NULL,\n    unit_temperature VARCHAR(10) DEFAULT 'celsius', -- 'celsius', 'fahrenheit'\n    unit_speed VARCHAR(10) DEFAULT 'kph', -- 'kph', 'mph'\n    unit_pressure VARCHAR(10) DEFAULT 'hpa', -- 'hpa', 'in_hg', 'mb'\n    unit_precipitation VARCHAR(10) DEFAULT 'mm', -- 'mm', 'in'\n    alert_email_enabled BOOLEAN DEFAULT TRUE,\n    alert_sms_enabled BOOLEAN DEFAULT FALSE,\n    preferred_language VARCHAR(10) DEFAULT 'en',\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE (tenant_id, user_id),\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,\n    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE\n);\n\n-- Audit Log table\nCREATE TABLE audit_log (\n    id BIGSERIAL PRIMARY KEY,\n    tenant_id UUID NOT NULL,\n    user_id UUID,\n    action VARCHAR(255) NOT NULL,\n    entity_type VARCHAR(255),\n    entity_id UUID,\n    details JSONB,\n    ip_address INET,\n    user_agent TEXT,\n    prompt_version VARCHAR(50), -- Captures AI prompt version for auditing\n    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,\n    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL\n);\nCREATE INDEX idx_audit_log_tenant_time ON audit_log (tenant_id, timestamp DESC);",
+          "vectorizationStrategy": {
+            "targetFields": [
+              "weather_alerts.description",
+              "weather_alerts.instruction"
+            ],
+            "embeddingModel": "OpenAI text-embedding-ada-002 (or compatible model with 1536 dimensions)",
+            "vectorStore": "PostgreSQL with pgvector extension",
+            "implementationDetails": [
+              "A `VECTOR(1536)` column named `embedding` will be added to the `weather_alerts` table.",
+              "Upon creation or update of a `weather_alert`, the `description` and `instruction` fields will be concatenated (or processed separately if needed) and sent to the embedding service.",
+              "The resulting vector will be stored in the `embedding` column.",
+              "An HNSW (Hierarchical Navigable Small World) index will be created on the `embedding` column to ensure fast approximate nearest neighbor (ANN) searches, targeting a latency of <200ms.",
+              "Use cases include semantic search for similar alerts, intelligent alert categorization, and personalized alert recommendations based on past user interactions or preferences."
+            ]
+          },
+          "dbPerformanceDashboard": {
+            "monitoredMetrics": [
+              "Vector Search Latency (ms) for `weather_alerts` table.",
+              "Database CPU, memory, and disk I/O utilization.",
+              "Active connections and connection pool saturation.",
+              "Long-running queries and query execution times.",
+              "Database size and growth rate, especially for `weather_observations` and `weather_forecasts` tables.",
+              "Data ingestion rates (rows per second) and latency for external API integrations.",
+              "Number of database errors and warnings.",
+              "Replication lag (if applicable).",
+              "Uptime and availability of the database instance.",
+              "Integrity checks: monitoring for constraint violations or data anomalies."
+            ],
+            "tools": "Grafana with Prometheus/CloudWatch/Azure Monitor as data sources, integrated with PostgreSQL metrics exporters."
+          },
+          "dataIngestionPipelines": {
+            "weatherDataIngestion": {
+              "sources": [
+                "External Weather APIs (e.g., OpenWeatherMap, AccuWeather, NOAA, ECMWF)"
+              ],
+              "frequency": "Real-time for current conditions (e.g., every 5-15 mins), hourly/daily for forecasts.",
+              "mechanism": "Scheduled serverless functions (e.g., AWS Lambda, Azure Functions) or Kubernetes cron jobs. These jobs will fetch data, perform validation, transform it into the defined schema, and execute batch inserts/upserts into `weather_observations` and `weather_forecasts` tables.",
+              "batching": "Implement batch inserts for high-volume data to optimize database performance."
+            },
+            "weatherAlertsIngestion": {
+              "sources": [
+                "Common Alerting Protocol (CAP) feeds, specialized alert APIs."
+              ],
+              "frequency": "Event-driven or frequent polling (e.g., every minute).",
+              "mechanism": "Dedicated microservice or streaming process (e.g., Kafka consumer) that processes incoming alert data, extracts relevant fields, generates embeddings for `description` and `instruction` fields, and inserts into the `weather_alerts` table."
+            },
+            "userInteractionIngestion": {
+              "sources": [
+                "Frontend application interactions (user preferences, location management, audit trails)."
+              ],
+              "frequency": "Event-driven.",
+              "mechanism": "API endpoints exposed by the backend application, which then interact with the database for `users`, `locations`, `user_preferences`, and `audit_log` tables."
+            },
+            "errorHandling": "Robust error handling, retry mechanisms with exponential backoff for external API calls, and dead-letter queues for failed database operations."
+          },
+          "backupStrategy": {
+            "fullBackups": "Daily full backups of the entire PostgreSQL database, stored in geographically redundant object storage (e.g., AWS S3, Azure Blob Storage).",
+            "pointInTimeRecovery": "Enable Write-Ahead Log (WAL) archiving for continuous incremental backups, allowing restoration to any specific point in time within the retention window.",
+            "retentionPolicy": {
+              "fullBackups": "7 days (daily), 4 weeks (weekly), 12 months (monthly).",
+              "walArchives": "30 days (for PITR capability).",
+              "dataSpecificTTL": {
+                "weather_observations": "10 years",
+                "weather_forecasts": "2 years",
+                "weather_alerts": "2 years",
+                "audit_log": "3 years"
+              }
+            },
+            "testing": "Regular, automated testing of backup and restore procedures to ensure data recoverability and meet RTO/RPO objectives.",
+            "encryption": "All backups encrypted at rest and in transit."
+          },
+          "startupQuestionsAnswered": {
+            "volumenDocumentosNoEstructurados": "Inicialmente, se estima un volumen moderado de cientos a miles de documentos no estructurados (descripciones de alertas) por día. Cada documento será de tamaño pequeño a mediano (unos pocos párrafos). Esto es manejable con Pgvector, pero se escalaría con una solución dedicada si se introducen volúmenes altos de feedback de usuario o análisis de texto más complejos.",
+            "politicaRetencionDatosTTL": {
+              "weather_observations": "10 años para análisis histórico y patrones climáticos a largo plazo.",
+              "weather_forecasts": "2 años para evaluación de modelos y auditoría.",
+              "weather_alerts": "2 años para referencia y análisis de eventos pasados.",
+              "audit_log": "3 años para cumplimiento normativo y auditoría.",
+              "users_tenants_locations_user_preferences": "Indefinida mientras el tenant/usuario esté activo."
+            },
+            "requisitosAislamientoDatosPorTenant": "Sí, el aislamiento de datos por tenant es un requisito fundamental. Todas las tablas críticas incluyen `tenant_id`. Se implementarán políticas de Row-Level Security (RLS) en PostgreSQL para asegurar que cada tenant solo pueda acceder y manipular sus propios datos, reforzando la seguridad y el cumplimiento."
+          }
+        },
+        "summaryMarkdown": "## Data Architecture for a Meteorological App\n\nAs Mbarakaja, The Memory, I have designed the data architecture for the meteorological application, focusing on a robust, scalable, and multi-tenant PostgreSQL database. \n\n**Key components include:**\n\n*   **Relational Schema (`schema.sql`):** A normalized schema is defined for core entities like `tenants`, `users`, `locations`, `weather_observations`, `weather_forecasts`, `weather_alerts`, `user_preferences`, and `audit_log`. Crucially, all relevant tables incorporate a `tenant_id` for enforcing multi-tenancy and data isolation.\n*   **Vectorization Strategy:** Unstructured text data within `weather_alerts` (descriptions and instructions) will be vectorized using a text embedding model (e.g., OpenAI's `text-embedding-ada-002`) and stored in a `VECTOR` column within PostgreSQL via the `pgvector` extension. HNSW indexing will ensure efficient similarity searches with target latencies under 200ms.\n*   **Data Ingestion Pipelines:** A strategy for ingesting data from external weather APIs, alert services (e.g., CAP feeds), and user interactions has been outlined, emphasizing scheduled jobs, microservices, batching, and robust error handling.\n*   **Database Performance Monitoring:** A dashboard will track critical metrics including vector search latency, CPU/memory usage, query performance, and data integrity to ensure optimal operation.\n*   **Backup and Recovery:** A comprehensive backup strategy includes daily full backups, Point-in-Time Recovery (PITR) via WAL archiving, and defined data retention policies, all with encryption and regular testing.\n\nThis architecture provides a solid foundation for storing and managing diverse meteorological data, supporting real-time operations, historical analysis, and advanced search capabilities.",
+        "todoMarkdown": "Actionable steps:\n- 1. Implement and test the `schema.sql` in a PostgreSQL environment, ensuring `pgvector` extension is enabled.\n- 2. Develop the microservices/jobs for data ingestion from external weather APIs and alert services.\n- 3. Integrate the embedding service into the alert ingestion pipeline to generate and store vectors for `weather_alerts` descriptions.\n- 4. Configure and deploy the database performance dashboard with monitoring for all specified metrics, especially vector search latency.\n- 5. Set up the automated backup and Point-in-Time Recovery (PITR) system, including off-site storage and encryption.\n- 6. Implement Row-Level Security (RLS) policies in PostgreSQL to strictly enforce `tenant_id` based data isolation.\n- 7. Define and implement data retention (TTL) policies for historical data, potentially using partitioning or automated archiving."
+      },
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/2/pdf"
     },
     {
       "step": 3,
