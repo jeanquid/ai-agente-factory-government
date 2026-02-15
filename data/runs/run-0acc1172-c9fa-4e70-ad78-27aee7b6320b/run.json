@@ -132,7 +132,7 @@
     {
       "step": 3,
       "agentId": "martin",
-      "status": "pending"
+      "status": "running"
     },
     {
       "step": 4,
