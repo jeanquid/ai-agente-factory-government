@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'url';
@@ -5,9 +6,10 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 
-// Import API handlers (using tsx to run them directly)
-// We need to use dynamic imports or require consistently.
-// Since we are in module mode (package.json type: module), we use imports.
+// Environment verification
+console.log('> Environment Check:');
+console.log(`  GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? 'CONFIGURED' : 'MISSING'}`);
+console.log(`  GOOGLE_API_KEY: ${process.env.GOOGLE_API_KEY ? 'CONFIGURED' : 'MISSING'}`);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -42,12 +44,12 @@ async function startServer() {
 
     app.post('/api/runs/start', async (req, res) => {
         const mod = await import('./api/runs/start.ts');
-        await handleVercel(mod)(req, res);
+        await handleVercel(mod, 'api/runs/start.ts')(req, res);
     });
 
     app.post('/api/test-model', async (req, res) => {
         const mod = await import('./api/test-model.js');
-        await handleVercel(mod)(req, res);
+        await handleVercel(mod, 'api/test-model.js')(req, res);
     });
 
     // Helper to merge route params into query (mimic Vercel/Next.js)
@@ -69,7 +71,7 @@ async function startServer() {
         // Let's normalize: sync params to query for compatibility
         const proxyReq = createProxyReq(req, req.params);
         const mod = await import('./api/runs/[runId]/steps/[step]/execute.ts');
-        await handleVercel(mod)(proxyReq, res);
+        await handleVercel(mod, 'api/runs/[runId]/steps/[step]/execute.ts')(proxyReq, res);
     });
 
     app.post('/api/runs/:runId/steps/:step/confirm-read', async (req, res) => {
