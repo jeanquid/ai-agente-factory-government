@@ -12,7 +12,7 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 1
+    "currentStep": 2
   },
   "steps": [
     {
@@ -35,7 +35,7 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T13:40:40.734Z",
       "deliverables": {
         "outputJson": {
@@ -126,7 +126,8 @@
         "summaryMarkdown": "## Data Architecture for a Meteorological App\n\nAs Mbarakaja, The Memory, I have designed the data architecture for the meteorological application, focusing on a robust, scalable, and multi-tenant PostgreSQL database. \n\n**Key components include:**\n\n*   **Relational Schema (`schema.sql`):** A normalized schema is defined for core entities like `tenants`, `users`, `locations`, `weather_observations`, `weather_forecasts`, `weather_alerts`, `user_preferences`, and `audit_log`. Crucially, all relevant tables incorporate a `tenant_id` for enforcing multi-tenancy and data isolation.\n*   **Vectorization Strategy:** Unstructured text data within `weather_alerts` (descriptions and instructions) will be vectorized using a text embedding model (e.g., OpenAI's `text-embedding-ada-002`) and stored in a `VECTOR` column within PostgreSQL via the `pgvector` extension. HNSW indexing will ensure efficient similarity searches with target latencies under 200ms.\n*   **Data Ingestion Pipelines:** A strategy for ingesting data from external weather APIs, alert services (e.g., CAP feeds), and user interactions has been outlined, emphasizing scheduled jobs, microservices, batching, and robust error handling.\n*   **Database Performance Monitoring:** A dashboard will track critical metrics including vector search latency, CPU/memory usage, query performance, and data integrity to ensure optimal operation.\n*   **Backup and Recovery:** A comprehensive backup strategy includes daily full backups, Point-in-Time Recovery (PITR) via WAL archiving, and defined data retention policies, all with encryption and regular testing.\n\nThis architecture provides a solid foundation for storing and managing diverse meteorological data, supporting real-time operations, historical analysis, and advanced search capabilities.",
         "todoMarkdown": "Actionable steps:\n- 1. Implement and test the `schema.sql` in a PostgreSQL environment, ensuring `pgvector` extension is enabled.\n- 2. Develop the microservices/jobs for data ingestion from external weather APIs and alert services.\n- 3. Integrate the embedding service into the alert ingestion pipeline to generate and store vectors for `weather_alerts` descriptions.\n- 4. Configure and deploy the database performance dashboard with monitoring for all specified metrics, especially vector search latency.\n- 5. Set up the automated backup and Point-in-Time Recovery (PITR) system, including off-site storage and encryption.\n- 6. Implement Row-Level Security (RLS) policies in PostgreSQL to strictly enforce `tenant_id` based data isolation.\n- 7. Define and implement data retention (TTL) policies for historical data, potentially using partitioning or automated archiving."
       },
-      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/2/pdf"
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/2/pdf",
+      "readConfirmed": true
     },
     {
       "step": 3,
