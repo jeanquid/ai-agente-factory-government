@@ -11,7 +11,7 @@
       "damian",
       "agustina"
     ],
-    "currentStep": 1
+    "currentStep": 2
   },
   "steps": [
     {
@@ -85,7 +85,7 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T03:24:20.475Z",
       "deliverables": {
         "outputJson": {
@@ -144,7 +144,8 @@
         "summaryMarkdown": "## Informe de Arquitectura de Datos - App de Citas\n\nComo Fabricio, el Arquitecto de Datos y Memoria, he diseñado el esquema de base de datos relacional y la estrategia de vectorización para la app de citas. El esquema SQL está normalizado para PostgreSQL, incluyendo tablas clave como `users`, `profiles`, `matches`, `conversations`, y `messages`, todas con soporte multi-tenant (`tenant_id`).\n\nSe ha definido una estrategia de vectorización para los campos `profiles.bio` y `profiles.preferences` utilizando `pgvector` para permitir búsquedas de similitud semántica y mejorar el motor de recomendaciones. Esto aborda la necesidad de procesar datos no estructurados de manera eficiente. Además, se ha diseñado una tabla `audit_logs` para capturar interacciones críticas, incluyendo el uso de IA y el registro de tokens de entrada/salida, cumpliendo con los requisitos de auditoría y rendimiento. Se propone un dashboard de performance para monitorear la latencia de búsqueda vectorial y la salud general de la DB, y se esboza una política de retención de datos para asegurar el cumplimiento y la gestión de la información.",
         "todoMarkdown": "### Próximos Pasos:\n- **Revisión del Schema SQL:** Presentar el `schema.sql` detallado a Javier (The Brain) y otros agentes para validación de entidades y atributos.\n- **Selección de Modelo de Embedding:** Confirmar el modelo de embedding específico (ej., OpenAI, Sentence Transformers) y el tamaño del vector a utilizar.\n- **Definición de Políticas de Backup:** Establecer un plan concreto de backups automáticos y recuperación de desastres, incluyendo frecuencia y ubicación de almacenamiento.\n- **Implementación de Pipelines de Ingestión:** Diseñar y empezar a implementar los pipelines para la ingestión de datos de perfil y la generación de sus embeddings.\n- **Configuración de Monitorización:** Configurar las herramientas de monitoreo para el `Dashboard de Performance de DB`, prestando especial atención a la latencia de búsqueda vectorial y el uso de recursos.\n- **Detallar Políticas de Privacidad:** Colaborar con el equipo para formalizar las políticas de privacidad y anonimización de datos, especialmente en relación con la retención y eliminación."
       },
-      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/2/pdf"
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/2/pdf",
+      "readConfirmed": true
     },
     {
       "step": 3,
