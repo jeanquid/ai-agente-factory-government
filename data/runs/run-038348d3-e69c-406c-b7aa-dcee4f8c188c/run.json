@@ -302,7 +302,110 @@
     {
       "step": 4,
       "agentId": "damian",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T03:32:35.397Z",
+      "deliverables": {
+        "outputJson": {
+          "matrizDeRolesYPermisos": {
+            "description": "Matriz inicial de Roles y Permisos (RBAC) para la aplicación de citas, diseñada bajo el principio de menor privilegio para proteger los datos de los usuarios y la funcionalidad del sistema.",
+            "roles": [
+              {
+                "roleName": "Usuario Registrado",
+                "permissions": [
+                  "profile:read_own",
+                  "profile:update_own",
+                  "profile:delete_own",
+                  "profile:read_other",
+                  "profile:report_other",
+                  "profile:block_other",
+                  "messages:send",
+                  "messages:receive",
+                  "messages:delete_own",
+                  "matches:view",
+                  "matches:like",
+                  "matches:dislike",
+                  "settings:privacy_manage"
+                ]
+              },
+              {
+                "roleName": "Moderador",
+                "inherits": [
+                  "Usuario Registrado"
+                ],
+                "permissions": [
+                  "content:review_photos",
+                  "content:review_text",
+                  "content:remove",
+                  "user:block",
+                  "user:unblock",
+                  "user:suspend",
+                  "report:view_all",
+                  "report:resolve"
+                ]
+              },
+              {
+                "roleName": "Administrador",
+                "inherits": [
+                  "Moderador"
+                ],
+                "permissions": [
+                  "user:manage_all",
+                  "system:config_read",
+                  "system:config_update",
+                  "audit:logs_read_all",
+                  "data:export_limited_pii",
+                  "platform:maintenance_mode_toggle"
+                ]
+              },
+              {
+                "roleName": "Equipo de Desarrollo (Dev)",
+                "permissions": [
+                  "code:read_all",
+                  "code:write_dev_staging",
+                  "db:schema_read_dev_staging",
+                  "db:data_read_dev_staging_sanitized",
+                  "secrets:access_dev_staging_read_only",
+                  "logs:read_all_environments",
+                  "infra:deploy_dev_staging"
+                ]
+              },
+              {
+                "roleName": "Cuentas de Servicio (Service Accounts)",
+                "permissions": [
+                  "api:profile_update_status",
+                  "api:notification_send_message",
+                  "api:image_process",
+                  "db:internal_read_write_specific_tables"
+                ]
+              }
+            ]
+          },
+          "reporteDeVulnerabilidadesInicial": {
+            "description": "Evaluación inicial de áreas de riesgo de seguridad para la aplicación de citas, identificando puntos críticos a abordar en las próximas fases.",
+            "findings": [
+              "**Secrets Hardcodeados (CRÍTICO):** Se ha identificado la necesidad imperativa de auditar el repositorio de código y la configuración en busca de claves API, tokens de autenticación, credenciales de base de datos u otros secretos hardcodeados. Su presencia es un riesgo de seguridad crítico y debe ser mitigada inmediatamente mediante el uso de una bóveda de secretos.",
+              "**Control de Acceso Inadecuado (ALTO):** La correcta implementación de la matriz RBAC es fundamental. Se debe garantizar que no existan vulnerabilidades de Broken Access Control que permitan a los usuarios acceder a recursos o realizar acciones fuera de sus permisos definidos. Esto incluye validación en el backend para todos los endpoints.",
+              "**Almacenamiento y Cifrado de Datos Sensibles (ALTO):** Los datos personales identificables (PII) de los usuarios, como fotos, preferencias y mensajes, deben ser cifrados tanto en reposo (en la base de datos y almacenamiento de archivos) como en tránsito (mediante HTTPS/TLS). La implementación de Row Level Security (RLS) es esencial para la privacidad.",
+              "**Vulnerabilidades de Inyección (ALTO):** Riesgo inherente en cualquier aplicación web. Se deben implementar protecciones contra SQL Injection, XSS (Cross-Site Scripting), Command Injection y otras formas de inyección en todas las capas de la aplicación, especialmente en la interacción con la base de datos y la renderización de contenido generado por el usuario.",
+              "**Endpoints de API Inseguros (MEDIO):** Todos los endpoints de la API deben estar protegidos con autenticación y autorización robustas. Se requiere la implementación de rate limiting para prevenir ataques de fuerza bruta y denegación de servicio, así como la validación de esquemas de entrada para evitar payloads malformados."
+            ],
+            "status": "Evaluación Inicial - Pendiente de Auditoría Detallada y Pruebas de Penetración"
+          },
+          "bovedaDeSecretosRecomendaciones": {
+            "description": "Recomendaciones para la gestión segura del ciclo de vida de los secretos (credenciales, claves API, tokens) de la aplicación.",
+            "recommendations": [
+              "**Plataforma de Gestión de Secretos:** Adoptar y configurar un servicio de gestión de secretos dedicado (ej. AWS Secrets Manager, HashiCorp Vault, Azure Key Vault, GCP Secret Manager) para centralizar el almacenamiento y acceso a todos los secretos.",
+              "**Rotación Automática de Claves:** Implementar políticas de rotación automática y regular para las credenciales de base de datos, claves API y otros secretos sensibles. Esto reduce la ventana de exposición en caso de compromiso.",
+              "**Acceso Basado en Roles/Identidad:** Los servicios y usuarios deben acceder a los secretos utilizando sus identidades de IAM, aplicando el principio de menor privilegio. Evitar la propagación de secretos a través de variables de entorno no protegidas o archivos de configuración.",
+              "**Auditoría de Acceso a Secretos:** Configurar el logging y la auditoría detallada de todos los intentos de acceso a la bóveda de secretos, incluyendo éxitos y fallos, para detectar y responder a actividades sospechosas.",
+              "**Separación de Entornos:** Mantener secretos completamente separados para los entornos de desarrollo, staging y producción, con políticas de acceso estrictas para cada uno."
+            ]
+          }
+        },
+        "summaryMarkdown": "## Informe de Seguridad - Fase 1: Planificación y Diseño (Damián - The Guardian)\n\nComo The Guardian, he completado la fase inicial de revisión de seguridad para la aplicación de citas, enfocándome en sentar las bases para una plataforma robusta y confiable. Mi misión es salvaguardar la plataforma y los datos de los clientes, asegurando la confidencialidad, integridad y disponibilidad.\n\n### Hitos Alcanzados:\n\n*   **Matriz de Roles y Permisos (RBAC):** Se ha definido una matriz exhaustiva de roles (Usuario Registrado, Moderador, Administrador, Equipo de Desarrollo, Cuentas de Servicio) con permisos detallados. Esto garantiza la aplicación del **principio de menor privilegio**, fundamental para limitar el acceso a los datos y funcionalidades sensibles.\n*   **Evaluación Inicial de Vulnerabilidades:** He realizado una inspección preliminar identificando áreas críticas de riesgo como la posible existencia de secretos hardcodeados, la necesidad de un robusto control de acceso, el cifrado de datos sensibles (PII) en reposo y tránsito, y la protección contra vulnerabilidades de inyección y APIs inseguras.\n*   **Recomendaciones para Bóveda de Secretos:** Se han establecido directrices claras para la gestión segura de credenciales y claves API, haciendo hincapié en el uso de un Secret Manager dedicado, la rotación automática de claves y el acceso basado en identidad.\n\nEsta fase ha establecido un marco de seguridad inicial, priorizando la protección de la información del usuario y la resiliencia del sistema frente a posibles ataques. La seguridad se integra desde el diseño, anticipando y mitigando riesgos antes de la implementación.",
+        "todoMarkdown": "### Próximos Pasos para The Guardian:\n\n-   **Auditoría de Código Estática (SAST):** Ejecutar herramientas SAST en el repositorio de código base para identificar y remediar cualquier secreto hardcodeado, dependencias vulnerables y patrones de codificación inseguros.\n-   **Configuración de RLS:** Colaborar activamente con Fabricio (The Memory) para diseñar e implementar las políticas de Row Level Security (RLS) en la base de datos, asegurando un control granular sobre el acceso a los datos sensibles de los usuarios.\n-   **Integración de Secret Manager:** Trabajar con Martín (The Plumber) para integrar un sistema de gestión de secretos (ej. HashiCorp Vault, AWS Secrets Manager) en la arquitectura, definiendo los flujos de acceso seguro para los microservicios y el equipo de desarrollo.\n-   **Modelado de Amenazas:** Realizar un taller de modelado de amenazas para identificar vectores de ataque específicos y diseñar contramedidas para los componentes clave de la aplicación.\n-   **Plan de Respuesta a Incidentes (IRP):** Desarrollar un borrador del Plan de Respuesta a Incidentes de Seguridad, incluyendo procedimientos de detección, contención, erradicación y recuperación.\n-   **Revisión de Cumplimiento Normativo:** Iniciar la evaluación de los requisitos de cumplimiento normativo (ej. GDPR) para asegurar que la gestión y protección de datos personales esté alineada con las regulaciones aplicables."
+      },
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/4/pdf"
     },
     {
       "step": 5,
