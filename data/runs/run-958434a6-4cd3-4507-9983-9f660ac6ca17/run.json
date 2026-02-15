@@ -1,0 +1,44 @@
+{
+  "runId": "958434a6-4cd3-4507-9983-9f660ac6ca17",
+  "tenantId": "default",
+  "mission": "crea una app de meteoros",
+  "createdAt": "2026-02-15T03:00:47.335Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
