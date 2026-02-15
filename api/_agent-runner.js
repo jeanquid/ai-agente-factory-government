@@ -119,6 +119,8 @@ export async function executeAgent(agentId, runState, previousSteps) {
 
         if (!text) throw new Error("No content generated from Gemini");
 
+        console.log(`[Agent Runner] Raw response from ${agentId}:`, text.substring(0, 500) + (text.length > 500 ? "..." : ""));
+
         // Robust JSON extraction
         let jsonText = text.trim();
         const firstBrace = jsonText.indexOf('{');
@@ -127,25 +129,44 @@ export async function executeAgent(agentId, runState, previousSteps) {
         if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             jsonText = jsonText.substring(firstBrace, lastBrace + 1);
         } else {
-            // Fallback cleanup
-            if (jsonText.startsWith('```json')) {
-                jsonText = jsonText.replace(/^```json/, '').replace(/```$/, '');
-            } else if (jsonText.startsWith('```')) {
-                jsonText = jsonText.replace(/^```/, '').replace(/```$/, '');
-            }
+            // Fallback: try removing markdown code blocks if the brace logic failed
+            jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
         }
 
-        const parsed = JSON.parse(jsonText);
+        let parsed;
+        try {
+            parsed = JSON.parse(jsonText);
+        } catch (parseError) {
+            console.error("[Agent Runner] JSON Parse Error. Extracted text:", jsonText);
+            throw new Error(`Failed to parse agent response as JSON: ${parseError.message}`);
+        }
+
+        // Flexible Key Matching (Senior Backend Resilience)
+        // Some models might rename keys despite instructions
+        const getVal = (keys) => {
+            const foundKey = keys.find(k => typeof parsed[k] !== 'undefined');
+            return foundKey ? parsed[foundKey] : undefined;
+        };
+
+        const outputJson = getVal(['outputJson', 'output', 'artifacts', 'data', 'result']);
+        const summaryMarkdown = getVal(['summaryMarkdown', 'summary', 'executiveSummary', 'description']);
+        const todoMarkdown = getVal(['todoMarkdown', 'todo', 'todos', 'nextSteps', 'actionItems', 'risks']);
 
         // Validation
-        if (typeof parsed.outputJson === 'undefined' || typeof parsed.summaryMarkdown === 'undefined' || typeof parsed.todoMarkdown === 'undefined') {
-            throw new Error("Response missing required fields (outputJson, summaryMarkdown, todoMarkdown)");
+        if (typeof outputJson === 'undefined' || typeof summaryMarkdown === 'undefined' || typeof todoMarkdown === 'undefined') {
+            console.error("[Agent Runner] Validation Failed. Parsed keys:", Object.keys(parsed));
+            throw {
+                ok: false,
+                error: "Agent response format invalid",
+                details: "Response missing required fields (outputJson, summaryMarkdown, todoMarkdown). Found: " + Object.keys(parsed).join(', '),
+                status: 500
+            };
         }
 
         return {
-            outputJson: parsed.outputJson,
-            summaryMarkdown: parsed.summaryMarkdown,
-            todoMarkdown: parsed.todoMarkdown
+            outputJson,
+            summaryMarkdown: String(summaryMarkdown),
+            todoMarkdown: String(todoMarkdown)
         };
 
     } catch (error) {
