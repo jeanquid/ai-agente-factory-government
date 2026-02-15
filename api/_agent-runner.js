@@ -15,7 +15,7 @@ function getPrimaryModel(req) {
     if (headerModel) return headerModel;
 
     // 3. Default
-    return "gemini-1.5-flash";
+    return "gemini-2.5-flash";
 }
 
 /**
@@ -28,11 +28,10 @@ async function generateWithFallback(genAI, systemPrompt, primaryModel) {
         const model = genAI.getGenerativeModel({
             model: modelName,
             generationConfig: {
-                temperature: 0.1,
+                temperature: 0.05,
                 topP: 0.95,
                 topK: 40,
                 maxOutputTokens: 8192,
-                responseMimeType: "application/json",
             }
         });
         const result = await model.generateContent(systemPrompt);
@@ -43,9 +42,9 @@ async function generateWithFallback(genAI, systemPrompt, primaryModel) {
     // Try primary model first, then standard fallbacks
     const modelsToTry = Array.from(new Set([
         primaryModel,                  // El que seleccionó el usuario
-        "gemini-1.5-flash",           // Fallback 1: Rápido y confiable
-        "gemini-1.5-flash-8b",        // Fallback 2: Alternativa rápida
-        "gemini-1.5-pro",             // Fallback 3: Mayor capacidad
+        "gemini-2.5-flash",           // Fallback 1: Rápido y confiable (v2.5)
+        "gemini-flash",               // Fallback 2: Alias estable
+        "gemini-2.5-pro",             // Fallback 3: Mayor capacidad (v2.5)
         "gemini-pro"                  // Fallback 4: Alias genérico
     ]));
 
@@ -128,6 +127,37 @@ export async function executeAgent(agentId, runState, previousSteps, req) {
     }));
 
     const systemPrompt = `
+⚠️ CRITICAL OUTPUT FORMAT ⚠️
+
+YOU MUST RESPOND WITH PURE JSON ONLY.
+
+RULES:
+1. Your ENTIRE response = ONLY the JSON object
+2. NO text before the {
+3. NO text after the }
+4. NO markdown code fences (no \`\`\`json or \`\`\`)
+5. NO explanations
+6. Valid, parseable JSON only
+
+REQUIRED JSON STRUCTURE:
+{
+  "outputJson": { YOUR_WORK_DATA_HERE },
+  "summaryMarkdown": "YOUR_SUMMARY_IN_MARKDOWN",
+  "todoMarkdown": "YOUR_TODO_LIST_IN_MARKDOWN"
+}
+
+EXAMPLE VALID RESPONSE:
+{
+  "outputJson": {
+    "databaseSchema": "...",
+    "tables": [],
+    "relationships": []
+  },
+  "summaryMarkdown": "## Database Design\\n\\n...",
+  "todoMarkdown": "- Task 1\\n- Task 2"
+}
+
+---
 You are ${agent.name}, acting as ${agent.role}.
 Your mission is: ${runState.mission}.
 
@@ -139,43 +169,60 @@ ${JSON.stringify(context, null, 2)}
 
 YOUR AGENT PROFILE:
 ${JSON.stringify(agent, null, 2)}
-
-CRITICAL OUTPUT REQUIREMENTS:
-You MUST respond with a valid JSON object containing exactly these three keys:
-{
-  "outputJson": {},
-  "summaryMarkdown": "## Summary Content",
-  "todoMarkdown": "- Next step 1"
-}
 `;
 
     try {
         const text = await generateWithFallback(genAI, systemPrompt, primaryModel);
         if (!text) throw new Error("No content generated from AI");
 
-        let parsed;
-        try {
-            parsed = JSON.parse(text);
-        } catch (e) {
-            // Robust extraction if JSON mode failed for some reason
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1) {
-                parsed = JSON.parse(text.substring(firstBrace, lastBrace + 1));
-            } else {
-                throw new Error("Failed to parse AI response as JSON");
-            }
+        let jsonText = text.trim();
+
+        // Remove markdown code fences
+        if (jsonText.includes('```')) {
+            console.log('[Parser] Removing markdown fences...');
+            jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         }
 
-        // Key matching normalization
-        const outputJson = parsed.outputJson || parsed.output || {};
-        const summaryMarkdown = parsed.summaryMarkdown || parsed.summary || "";
-        const todoMarkdown = parsed.todoMarkdown || parsed.todo || "";
+        // Extract JSON object
+        const firstBrace = jsonText.indexOf('{');
+        const lastBrace = jsonText.lastIndexOf('}');
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            jsonText = jsonText.substring(firstBrace, lastBrace + 1);
+        } else {
+            console.error('[Parser] No valid JSON boundaries found');
+            console.error('[Parser] Raw response:', text.substring(0, 500));
+            throw new Error('Response does not contain valid JSON object');
+        }
+
+        console.log('[Parser] Cleaned JSON preview:', jsonText.substring(0, 200));
+
+        // Parse
+        let parsed;
+        try {
+            parsed = JSON.parse(jsonText);
+        } catch (parseError) {
+            console.error('[Parser] JSON Parse Error:', parseError.message);
+            console.error('[Parser] Failed text:', jsonText.substring(0, 1000));
+            throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+        }
+
+        // Validate required fields
+        const required = ['outputJson', 'summaryMarkdown', 'todoMarkdown'];
+        const missing = required.filter(field => !(field in parsed));
+
+        if (missing.length > 0) {
+            console.error('[Parser] Missing fields:', missing);
+            console.error('[Parser] Received keys:', Object.keys(parsed));
+            throw new Error(`Missing required fields: ${missing.join(', ')}`);
+        }
+
+        console.log('[Parser] ✅ Valid JSON parsed successfully');
 
         return {
-            outputJson,
-            summaryMarkdown: String(summaryMarkdown),
-            todoMarkdown: String(todoMarkdown)
+            outputJson: parsed.outputJson,
+            summaryMarkdown: parsed.summaryMarkdown,
+            todoMarkdown: parsed.todoMarkdown
         };
 
     } catch (error) {

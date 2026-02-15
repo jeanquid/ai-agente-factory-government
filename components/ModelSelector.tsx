@@ -3,37 +3,29 @@ import { Zap, DollarSign, Check, AlertCircle } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
     {
-        id: 'gemini-1.5-flash',
-        name: 'Gemini 1.5 Flash',
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
         provider: 'google',
         speed: 3,
         cost: 1,
-        description: 'Rápido y económico (Recomendado)',
+        description: 'Nueva Generación: Rápido y eficiente (Recomendado)',
         recommended: true
     },
     {
-        id: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro',
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
         provider: 'google',
         speed: 2,
         cost: 3,
-        description: 'Más potente para tareas complejas'
+        description: 'Más potente para tareas complejas (v2.5)'
     },
     {
-        id: 'gemini-1.5-flash-8b',
-        name: 'Gemini 1.5 Flash 8B',
+        id: 'gemini-flash',
+        name: 'Gemini Flash (Alias)',
         provider: 'google',
         speed: 3,
         cost: 1,
-        description: 'Ultra rápido, ideal para alta demanda'
-    },
-    {
-        id: 'gemini-2.0-flash-exp',
-        name: 'Gemini 2.0 Flash (Experimental)',
-        provider: 'google',
-        speed: 3,
-        cost: 2,
-        description: 'Nueva generación - puede tener límites menores'
+        description: 'Alias que apunta al modelo Flash más reciente'
     },
     {
         id: 'gemini-pro',
@@ -46,7 +38,7 @@ const AVAILABLE_MODELS = [
 ];
 
 export function ModelSelector({ compact = false }: { compact?: boolean }) {
-    const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+    const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
     const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);

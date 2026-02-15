@@ -115,7 +115,7 @@ export default async function handler(
       ${JSON.stringify(rulesToUse, null, 2)}
     `;
 
-        const modelName = req.headers['x-ai-model'] as string || 'gemini-1.5-flash';
+        const modelName = req.headers['x-ai-model'] as string || 'gemini-2.5-flash';
         console.log(`[Generate Prompt] Using model: ${modelName}`);
 
         const model = genAI.getGenerativeModel({
