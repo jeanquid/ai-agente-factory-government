@@ -12,7 +12,7 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 4
+    "currentStep": 5
   },
   "steps": [
     {
@@ -363,7 +363,7 @@
     {
       "step": 5,
       "agentId": "agustina",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T13:47:23.953Z",
       "deliverables": {
         "outputJson": {
@@ -517,7 +517,8 @@
         "summaryMarkdown": "## Estrategia de Go-to-Market para ClimaPro: Tu Asistente Meteorológico Inteligente\n\nComo Tuyuyu, he desarrollado la estrategia inicial de marketing y ventas para la aplicación meteorológica ClimaPro. El enfoque se centra en resolver el **dolor principal** de la incertidumbre climática a través de pronósticos precisos, hiperlocales y alertas personalizadas. Hemos definido los segmentos de **compradores económicos** (B2C y B2B) y las **métricas de éxito** que les importan, destacando el ROI para el segmento empresarial.\n\nSe ha creado un **Kit de Ventas y Prensa** que incluye un borrador de comunicado de prensa y un esquema para el deck de ventas, enfatizando los beneficios y el valor añadido de ClimaPro. Además, se ha diseñado una plantilla de **email de prospección en frío** y un **flujo para demostraciones de venta** para guiar las interacciones con prospectos.\n\nLa **propuesta de valor** se articula en torno a la precisión, la personalización y la proactividad, buscando aliviar los puntos de dolor de los usuarios y generar ganancias tangibles. La validación del pricing sugiere un modelo freemium para consumidores y suscripciones/API para empresas, con la recomendación de una validación real con prospectos.",
         "todoMarkdown": "Actionable steps:\n- 1. Finalizar el diseño del material de marketing (deck de ventas, landing page) basado en el esquema.\n- 2. Identificar y segmentar una lista inicial de 50 prospectos B2B (ej. agricultura, logística, eventos).\n- 3. Ejecutar una campaña piloto de cold outreach utilizando el template y medir la tasa de apertura y respuesta.\n- 4. Realizar al menos 5 demos de venta aplicando el flujo definido y recopilar feedback inicial.\n- 5. Diseñar y ejecutar una encuesta de mercado para validar el pricing propuesto con al menos 3 prospectos B2C y 3 B2B reales."
       },
-      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/5/pdf"
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/5/pdf",
+      "readConfirmed": true
     },
     {
       "step": 6,
