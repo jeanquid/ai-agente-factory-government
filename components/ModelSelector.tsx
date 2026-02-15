@@ -8,7 +8,7 @@ const AVAILABLE_MODELS = [
         provider: 'google',
         speed: 3,
         cost: 1,
-        description: 'Más rápido y económico (Recomendado)',
+        description: 'Rápido y económico (Recomendado)',
         recommended: true
     },
     {
@@ -29,14 +29,14 @@ const AVAILABLE_MODELS = [
     },
     {
         id: 'gemini-2.0-flash-exp',
-        name: 'Gemini 2.0 Flash (Preview)',
+        name: 'Gemini 2.0 Flash (Experimental)',
         provider: 'google',
         speed: 3,
         cost: 2,
-        description: 'Nueva generación con mayor velocidad'
+        description: 'Nueva generación (puede ser inestable)'
     },
     {
-        id: 'claude-3-5-sonnet-20240620',
+        id: 'claude-3-5-sonnet-20241022',
         name: 'Claude Sonnet 3.5',
         provider: 'anthropic',
         speed: 2,
