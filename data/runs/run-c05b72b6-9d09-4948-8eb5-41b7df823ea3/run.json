@@ -12,13 +12,13 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 0
+    "currentStep": 1
   },
   "steps": [
     {
       "step": 1,
       "agentId": "javier",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T14:27:09.215Z",
       "deliverables": {
         "outputJson": {
@@ -38,7 +38,8 @@
         "summaryMarkdown": "## Planificación Inicial de la App de Meteorología\n\nComo Guyra, 'The Brain', he completado la fase inicial de diseño para una aplicación de meteorología. Esto incluye la conceptualización del 'Agente de Datos Meteorológicos' a través de un `System Prompt` detallado, que define su rol, tarea, contexto y formato de salida JSON. Este agente será el corazón de la app, responsable de la adquisición y estructuración de la información climática.\n\nSe ha elaborado un `Diagrama de Flujo Cognitivo` utilizando MermaidJS, que ilustra el proceso desde la interacción inicial del usuario hasta la presentación de los datos, incluyendo la validación de ubicaciones y el manejo de errores. Este flujo servirá como hoja de ruta para el desarrollo de la lógica de la aplicación.\n\nFinalmente, se ha redactado un documento de `Criterios de Aceptación` preliminares. Estos criterios abarcan funcionalidades básicas, interacción con el usuario, rendimiento y fiabilidad, sentando las bases para la validación del producto final y asegurando que cumpla con las expectativas de funcionalidad y experiencia de usuario.",
         "todoMarkdown": "Actionable steps:\n- **Desarrollo del Agente de Datos:** Implementar el 'Agente de Datos Meteorológicos' siguiendo el `System_Prompt_AgenteMeteorologico_v0.1.md`.\n- **Selección e Integración de API:** Investigar y seleccionar una API de meteorología robusta (e.g., OpenWeatherMap, AccuWeather) e integrarla con el Agente de Datos.\n- **Diseño de Interfaz de Usuario (UI/UX):** Crear wireframes y mockups basados en los `Criterios_Aceptacion_App_Meteorologia.md` para visualizar cómo se presentarán los datos al usuario.\n- **Desarrollo del Módulo de Geocodificación:** Implementar la funcionalidad para convertir nombres de ciudades en coordenadas geográficas y viceversa.\n- **Pruebas Unitarias del Agente de Datos:** Realizar pruebas exhaustivas para asegurar que el Agente de Datos recupera, procesa y formatea la información correctamente y maneja los errores según lo especificado."
       },
-      "pdfUrl": "/api/runs/c05b72b6-9d09-4948-8eb5-41b7df823ea3/steps/1/pdf"
+      "pdfUrl": "/api/runs/c05b72b6-9d09-4948-8eb5-41b7df823ea3/steps/1/pdf",
+      "readConfirmed": true
     },
     {
       "step": 2,
