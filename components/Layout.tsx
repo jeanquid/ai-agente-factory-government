@@ -1,6 +1,6 @@
 import React from 'react';
 import { agents } from '../data';
-import { LayoutDashboard, Brain, Database, Workflow, Shield, Megaphone, Menu, X, Rocket } from 'lucide-react';
+import { LayoutDashboard, Brain, Database, Workflow, Shield, Megaphone, Menu, X, Rocket, Code, Terminal } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +13,8 @@ const iconMap: Record<string, React.FC<any>> = {
   Database: Database,
   Workflow: Workflow,
   Shield: Shield,
-  Megaphone: Megaphone
+  Megaphone: Megaphone,
+  Code: Terminal
 };
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
@@ -84,6 +85,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
                 else if (agent.color === 'orange') activeClass = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
                 else if (agent.color === 'red') activeClass = 'bg-red-500/20 text-red-400 border-red-500/30';
                 else if (agent.color === 'emerald') activeClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                else if (agent.color === 'cyan') activeClass = 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
               }
 
               return (
