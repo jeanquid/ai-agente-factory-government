@@ -302,7 +302,8 @@
     {
       "step": 4,
       "agentId": "damian",
-      "status": "running"
+      "status": "failed",
+      "error": "Agent response format invalid"
     },
     {
       "step": 5,
