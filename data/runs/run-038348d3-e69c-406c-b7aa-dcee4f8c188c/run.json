@@ -150,7 +150,153 @@
     {
       "step": 3,
       "agentId": "martin",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T03:26:11.360Z",
+      "deliverables": {
+        "outputJson": {
+          "n8nWorkflows": [
+            {
+              "name": "Registro y Perfil de Usuario",
+              "description": "Gestiona la creación de nuevas cuentas de usuario, el almacenamiento de datos de perfil y la carga de fotos.",
+              "trigger": "Webhook (HTTP POST /api/v1/users/register)",
+              "nodes": [
+                "Webhook (Recibe datos de usuario: nombre, email, password, fechaNacimiento, genero, preferencias, bio, fotos_base64)",
+                "Validación de Datos (Email, edad mínima, formato de datos)",
+                "Hash de Contraseña (si no lo gestiona un servicio de auth externo)",
+                "Almacenar Usuario en DB (Integración con Fabricio's PostgreSQL: tabla 'users')",
+                "Cargar Fotos a S3 (Decodificar base64, subir a AWS S3, obtener URLs públicas)",
+                "Actualizar URLs de Fotos en DB (Actualizar tabla 'users' con URLs de S3)",
+                "Enviar Email de Bienvenida (SendGrid API)",
+                "Respuesta HTTP (Éxito/Error)",
+                "Manejo de Errores (Try/Catch, Notificación a Slack)"
+              ],
+              "qualityChecklist": [
+                "¿El workflow maneja errores (try/catch)?",
+                "¿Las credenciales se llaman desde variables de entorno?",
+                "¿Hay notificaciones de fallo configuradas?"
+              ]
+            },
+            {
+              "name": "Búsqueda y Matching de Perfiles",
+              "description": "Permite a los usuarios buscar y descubrir perfiles compatibles basándose en preferencias y criterios.",
+              "trigger": "Webhook (HTTP GET /api/v1/users/{userId}/matches)",
+              "nodes": [
+                "Webhook (Recibe userId y parámetros de filtro opcionales)",
+                "Consultar Perfil de Usuario (Obtener preferencias del usuario de la DB)",
+                "Consultar Perfiles Candidatos (Buscar en DB perfiles que coincidan con preferencias y filtros, excluyendo perfiles ya vistos o rechazados)",
+                "Lógica de Matching (Node de código JS para aplicar reglas de compatibilidad o scoring)",
+                "Respuesta HTTP (Lista de perfiles coincidentes)",
+                "Manejo de Errores (Try/Catch, Notificación a Slack)"
+              ],
+              "qualityChecklist": [
+                "¿El workflow maneja errores (try/catch)?",
+                "¿Las credenciales se llaman desde variables de entorno?",
+                "¿Hay notificaciones de fallo configuradas?"
+              ]
+            },
+            {
+              "name": "Envío de Mensajes y Notificaciones",
+              "description": "Gestiona el envío de mensajes entre usuarios y dispara las notificaciones correspondientes.",
+              "trigger": "Webhook (HTTP POST /api/v1/messages/send)",
+              "nodes": [
+                "Webhook (Recibe senderId, receiverId, messageContent)",
+                "Validar Match (Verificar en DB si senderId y receiverId tienen un match activo)",
+                "Almacenar Mensaje en DB (Tabla 'messages')",
+                "Disparar Notificación (Llamada HTTP interna a /api/v1/notifications/trigger con receiverId y tipo de mensaje)",
+                "Respuesta HTTP (Éxito/Error)",
+                "Manejo de Errores (Try/Catch, Notificación a Slack)"
+              ],
+              "qualityChecklist": [
+                "¿El workflow maneja errores (try/catch)?",
+                "¿Las credenciales se llaman desde variables de entorno?",
+                "¿Hay notificaciones de fallo configuradas?"
+              ]
+            },
+            {
+              "name": "Gestión de Notificaciones Push/Email",
+              "description": "Centraliza el envío de notificaciones a través de diferentes canales (push, email).",
+              "trigger": "Webhook (HTTP POST /api/v1/notifications/trigger)",
+              "nodes": [
+                "Webhook (Recibe userId, type, payload)",
+                "Consultar Preferencias de Notificación (De la DB, para saber cómo notificar al usuario)",
+                "Componer Mensaje de Notificación (Basado en 'type' y 'payload')",
+                "Enviar Push Notification (Firebase Cloud Messaging API via HTTP Request)",
+                "Enviar Email (SendGrid API via HTTP Request, si aplica)",
+                "Respuesta HTTP (Éxito/Error)",
+                "Manejo de Errores (Try/Catch, Notificación a Slack, lógica de reintento)"
+              ],
+              "qualityChecklist": [
+                "¿El workflow maneja errores (try/catch)?",
+                "¿Las credenciales se llaman desde variables de entorno?",
+                "¿Hay notificaciones de fallo configuradas?"
+              ]
+            }
+          ],
+          "apiEndpoints": [
+            {
+              "path": "/api/v1/users/register",
+              "method": "POST",
+              "description": "Registra un nuevo usuario y crea su perfil."
+            },
+            {
+              "path": "/api/v1/users/{userId}/matches",
+              "method": "GET",
+              "description": "Obtiene una lista de perfiles coincidentes para un usuario específico."
+            },
+            {
+              "path": "/api/v1/messages/send",
+              "method": "POST",
+              "description": "Envía un mensaje de un usuario a otro."
+            },
+            {
+              "path": "/api/v1/notifications/trigger",
+              "method": "POST",
+              "description": "Endpoint interno para disparar notificaciones push o por email."
+            }
+          ],
+          "integrations": [
+            {
+              "name": "Database",
+              "service": "PostgreSQL (asumido de Fabricio)",
+              "purpose": "Almacenamiento de perfiles de usuario, matches, mensajes, preferencias."
+            },
+            {
+              "name": "Email Service",
+              "service": "SendGrid",
+              "purpose": "Envío de emails de bienvenida, recuperación de contraseña, notificaciones."
+            },
+            {
+              "name": "File Storage",
+              "service": "AWS S3",
+              "purpose": "Almacenamiento escalable de fotos de perfil de usuario."
+            },
+            {
+              "name": "Push Notifications",
+              "service": "Firebase Cloud Messaging (FCM)",
+              "purpose": "Envío de notificaciones en tiempo real a dispositivos móviles (nuevos matches, mensajes)."
+            },
+            {
+              "name": "Monitoring & Alerts",
+              "service": "Slack",
+              "purpose": "Notificaciones de fallos críticos en los workflows."
+            }
+          ],
+          "errorHandlingStrategy": {
+            "globalErrorWorkflow": true,
+            "nodeLevelErrorHandling": "Try/Catch en nodos críticos (DB, APIs externas)",
+            "retryLogic": "Configurado para llamadas a APIs externas (S3, SendGrid, FCM) con reintentos exponenciales.",
+            "notifications": "Alertas a un canal de Slack para errores críticos y fallos de workflows."
+          },
+          "deploymentStrategy": {
+            "n8nInstance": "Instancia de n8n en la nube (ej. n8n.cloud o self-hosted en AWS/GCP)",
+            "versionControl": "Workflows exportados y versionados en un repositorio Git.",
+            "monitoring": "Uptime del servicio n8n, métricas de ejecución de workflows, tasa de fallos."
+          }
+        },
+        "summaryMarkdown": "## Resumen de la Orquestación Técnica para la App de Citas\n\nComo 'El Plomero', he diseñado la arquitectura de orquestación técnica para la aplicación de citas, conectando la lógica de negocio (asumida de Javier) con la persistencia de datos (Fabricio) y los servicios externos. Se han definido cuatro flujos de trabajo clave en n8n:\n\n1.  **Registro y Perfil de Usuario**: Maneja la creación de cuentas, almacenamiento de datos y carga de fotos a AWS S3.\n2.  **Búsqueda y Matching de Perfiles**: Procesa la lógica para encontrar usuarios compatibles.\n3.  **Envío de Mensajes y Notificaciones**: Gestiona la comunicación entre usuarios y dispara alertas.\n4.  **Gestión de Notificaciones Push/Email**: Centraliza el envío de notificaciones a través de FCM y SendGrid.\n\nEstos flujos se integrarán con una base de datos PostgreSQL (provista por Fabricio), servicios de correo electrónico (SendGrid), almacenamiento de archivos (AWS S3) y notificaciones push (Firebase Cloud Messaging). Se ha puesto un énfasis particular en el manejo robusto de errores, incluyendo lógica de reintento, monitoreo y alertas en Slack para asegurar la fiabilidad del servicio y cumplir con los estándares de calidad.",
+        "todoMarkdown": "### Próximos Pasos para Martín:\n\n-   **Configuración Inicial:**\n    -   Configurar una instancia de n8n y asegurar el acceso.\n    -   Definir y cargar las credenciales necesarias (DB, SendGrid, AWS S3, FCM, Slack) como variables de entorno seguras en n8n.\n-   **Desarrollo de Workflows:**\n    -   Implementar el workflow 'Registro y Perfil de Usuario' en n8n, incluyendo la validación de datos y la integración con la base de datos de Fabricio y AWS S3 para fotos.\n    -   Crear el workflow 'Búsqueda y Matching de Perfiles', conectando con la base de datos para recuperar y procesar perfiles.\n    -   Desarrollar el workflow 'Envío de Mensajes y Notificaciones', asegurando la validación de matches y el almacenamiento de mensajes.\n    -   Construir el workflow 'Gestión de Notificaciones Push/Email' para disparar alertas a través de FCM y SendGrid.\n-   **Manejo de Errores y Calidad:**\n    -   Integrar manejo de errores (Try/Catch) en cada workflow crítico.\n    -   Configurar un workflow global de manejo de errores y notificaciones de Slack para fallos.\n    -   Añadir lógica de reintento para las llamadas a APIs externas.\n-   **Pruebas:**\n    -   Realizar pruebas de integración end-to-end para cada workflow y sus endpoints asociados.\n    -   Documentar los workflows de n8n con descripciones claras y ejemplos de payload."
+      },
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/3/pdf"
     },
     {
       "step": 4,
