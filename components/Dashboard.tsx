@@ -2,27 +2,30 @@ import React from 'react';
 import { agents, governanceRules } from '../data';
 import { ArrowRight, ShieldCheck, Users, Lock, Database, Activity } from 'lucide-react';
 import { AgentProfile } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface DashboardProps {
   onNavigate: (view: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-12 animate-fade-in">
       <header className="mb-12 flex flex-col items-start gap-6">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Government of Agents</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">{t('govTitle')}</h1>
           <p className="text-slate-400 text-lg max-w-3xl">
-            Centralized control plane for the definition, orchestration, and governance of specialized AI agents.
-            Strict adherence to the <span className="text-indigo-400 font-semibold">Enterprise Protocol</span>.
+            {t('govSubtitle')}
+            {" "}{t('strictAdherence')}{" "}<span className="text-indigo-400 font-semibold">{t('enterpriseProtocol')}</span>.
           </p>
         </div>
         <button
           onClick={() => onNavigate('orchestration')}
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center gap-2"
         >
-          <span>Launch Multi-Agent Fabrication</span>
+          <span>{t('launchFabrication')}</span>
           <ArrowRight size={20} />
         </button>
       </header>
@@ -31,7 +34,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <ShieldCheck className="text-emerald-500 w-6 h-6" />
-          <h2 className="text-2xl font-semibold text-white">Non-Negotiable Government Rules</h2>
+          <h2 className="text-2xl font-semibold text-white">{t('govRules')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -40,7 +43,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-slate-200">{rule.title}</h3>
                 {rule.mandatory && (
-                  <span className="px-2 py-0.5 bg-red-900/30 text-red-400 text-xs rounded uppercase font-bold border border-red-900/50">Mandatory</span>
+                  <span className="px-2 py-0.5 bg-red-900/30 text-red-400 text-xs rounded uppercase font-bold border border-red-900/50">{t('mandatory')}</span>
                 )}
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -55,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Users className="text-indigo-400 w-6 h-6" />
-          <h2 className="text-2xl font-semibold text-white">Active Agents Roster</h2>
+          <h2 className="text-2xl font-semibold text-white">{t('activeRoster')}</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -72,8 +75,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Database className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">Storage Strategy</div>
-            <div className="text-slate-200 font-medium">Multi-tenant (tenant_id)</div>
+            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">{t('storageStrategy')}</div>
+            <div className="text-slate-200 font-medium">{t('multiTenant')}</div>
           </div>
         </div>
         <div className="flex items-center gap-4 text-slate-400">
@@ -81,8 +84,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">Audit Level</div>
-            <div className="text-slate-200 font-medium">Full Context & Embeddings</div>
+            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">{t('auditLevel')}</div>
+            <div className="text-slate-200 font-medium">{t('fullContext')}</div>
           </div>
         </div>
         <div className="flex items-center gap-4 text-slate-400">
@@ -90,8 +93,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">Security Standard</div>
-            <div className="text-slate-200 font-medium">Secrets Management (Vault)</div>
+            <div className="text-xs uppercase tracking-wide font-semibold text-slate-500">{t('securityStandard')}</div>
+            <div className="text-slate-200 font-medium">{t('secretsManagement')}</div>
           </div>
         </div>
       </section>
@@ -100,6 +103,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 };
 
 const AgentSummaryCard: React.FC<{ agent: AgentProfile; onClick: () => void }> = ({ agent, onClick }) => {
+  const { t } = useLanguage();
   // Determine color theme for card
   let themeClass = 'hover:border-slate-600';
   let buttonClass = 'text-slate-400 group-hover:text-white';
@@ -143,7 +147,7 @@ const AgentSummaryCard: React.FC<{ agent: AgentProfile; onClick: () => void }> =
       </p>
 
       <div className={`flex items-center gap-2 text-sm font-medium ${buttonClass}`}>
-        View Protocols <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+        {t('viewProtocols')} <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
       </div>
     </div>
   );

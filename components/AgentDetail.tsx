@@ -1,6 +1,7 @@
 import React from 'react';
 import { AgentProfile } from '../types';
 import { AgentGenerator } from './AgentGenerator';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
   CheckCircle,
   XCircle,
@@ -28,6 +29,7 @@ interface AgentDetailProps {
 }
 
 export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
+  const { t } = useLanguage();
   // Dynamic color resolution
   const getColor = (opacity = 1) => {
     switch (agent.color) {
@@ -56,7 +58,7 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{agent.fullName}</h1>
         <p className="text-xl text-slate-300 max-w-4xl leading-relaxed">
-          {agent.mission}
+          {t(agent.mission as any)}
         </p>
       </div>
 
@@ -65,13 +67,13 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900/50 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-3 mb-6">
             <CheckCircle className="text-emerald-500" />
-            <h3 className="text-xl font-bold text-white">In Scope</h3>
+            <h3 className="text-xl font-bold text-white">{t('inScope')}</h3>
           </div>
           <ul className="space-y-3">
             {agent.scope.map((item, i) => (
               <li key={i} className="flex items-start gap-3 text-slate-300">
                 <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                <span>{item}</span>
+                <span>{t(item as any)}</span>
               </li>
             ))}
           </ul>
@@ -80,13 +82,13 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900/50 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-3 mb-6">
             <XCircle className="text-red-500" />
-            <h3 className="text-xl font-bold text-white">Out of Scope</h3>
+            <h3 className="text-xl font-bold text-white">{t('outOfScope')}</h3>
           </div>
           <ul className="space-y-3">
             {agent.outOfScope.map((item, i) => (
               <li key={i} className="flex items-start gap-3 text-slate-400">
                 <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-                <span>{item}</span>
+                <span>{t(item as any)}</span>
               </li>
             ))}
           </ul>
@@ -97,7 +99,7 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-4 text-slate-200 font-semibold uppercase tracking-wider text-sm">
-            <FileInput size={18} className="text-slate-400" /> Required Inputs
+            <FileInput size={18} className="text-slate-400" /> {t('inputs')}
           </div>
           <ul className="divide-y divide-slate-800">
             {agent.inputs.map((input, i) => (
@@ -108,7 +110,7 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
 
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-4 text-slate-200 font-semibold uppercase tracking-wider text-sm">
-            <FileOutput size={18} className="text-slate-400" /> Concrete Outputs
+            <FileOutput size={18} className="text-slate-400" /> {t('outputs')}
           </div>
           <ul className="divide-y divide-slate-800">
             {agent.outputs.map((output, i) => (
@@ -123,9 +125,9 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <BarChart2 className="text-slate-400" />
-            <h3 className="text-xl font-bold text-white">Performance Metrics</h3>
+            <h3 className="text-xl font-bold text-white">{t('metrics')}</h3>
           </div>
-          <span className="text-sm text-slate-400 italic text-right max-w-md">{agent.metrics.description}</span>
+          <span className="text-sm text-slate-400 italic text-right max-w-md">{t(agent.metrics.description as any)}</span>
         </div>
 
         <div className="h-64 w-full">
@@ -165,12 +167,12 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900/80 rounded-xl border border-slate-800 p-6 lg:col-span-1">
           <div className="flex items-center gap-2 mb-6">
             <HelpCircle className="text-yellow-500" />
-            <h3 className="text-lg font-bold text-white">Startup Questions</h3>
+            <h3 className="text-lg font-bold text-white">{t('startupQuestions')}</h3>
           </div>
           <div className="space-y-4">
             {agent.startupQuestions.map((q, i) => (
               <div key={i} className="bg-slate-950 p-4 rounded-lg border border-slate-800 text-sm text-slate-300">
-                <span className="text-slate-500 font-bold mr-2">Q{i + 1}:</span> {q}
+                <span className="text-slate-500 font-bold mr-2">Q{i + 1}:</span> {t(q as any)}
               </div>
             ))}
           </div>
@@ -180,7 +182,7 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900/80 rounded-xl border border-slate-800 p-6 lg:col-span-2">
           <div className="flex items-center gap-2 mb-6">
             <PlayCircle className="text-blue-500" />
-            <h3 className="text-lg font-bold text-white">Standard Operating Procedure</h3>
+            <h3 className="text-lg font-bold text-white">{t('procedure')}</h3>
           </div>
           <div className="space-y-0 relative">
             {/* Connector Line */}
@@ -207,13 +209,13 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <ClipboardList className="text-emerald-400" />
-            <h3 className="text-lg font-bold text-white">Quality Assurance Checklist</h3>
+            <h3 className="text-lg font-bold text-white">{t('qualityChecklist')}</h3>
           </div>
           <ul className="space-y-3">
             {agent.qualityChecklist.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
                 <div className="mt-1 w-4 h-4 rounded border border-slate-600 flex-shrink-0" />
-                <span className="text-sm text-slate-300">{item}</span>
+                <span className="text-sm text-slate-300">{t(item as any)}</span>
               </li>
             ))}
           </ul>
@@ -223,7 +225,7 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="text-slate-400" />
-            <h3 className="text-lg font-bold text-white">Standard Templates</h3>
+            <h3 className="text-lg font-bold text-white">{t('templates')}</h3>
           </div>
           <div className="grid gap-3">
             {agent.templates.map((template, i) => (
@@ -240,14 +242,14 @@ export const AgentDetail: React.FC<AgentDetailProps> = ({ agent }) => {
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-6">
         <div className="flex items-center gap-3 mb-6">
           <ListTodo className="text-white w-6 h-6" />
-          <h3 className="text-xl font-bold text-white">Phase 1: Immediate Tasks</h3>
-          <span className="text-xs font-bold bg-indigo-600 text-white px-2 py-0.5 rounded">THIS WEEK</span>
+          <h3 className="text-xl font-bold text-white">{t('phase1Tasks')}</h3>
+          <span className="text-xs font-bold bg-indigo-600 text-white px-2 py-0.5 rounded">{t('thisWeek')}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {agent.phase1Tasks.map((task, i) => (
             <div key={i} className="bg-black/20 p-4 rounded-lg border border-slate-600/30 backdrop-blur-sm">
               <span className="text-xs font-bold text-slate-500 block mb-2">TASK {i + 1}</span>
-              <p className="text-slate-200 font-medium text-sm leading-relaxed">{task}</p>
+              <p className="text-slate-200 font-medium text-sm leading-relaxed">{t(task as any)}</p>
             </div>
           ))}
         </div>

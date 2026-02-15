@@ -1,6 +1,8 @@
 import React from 'react';
 import { agents } from '../data';
 import { LayoutDashboard, Brain, Database, Workflow, Shield, Megaphone, Menu, X, Rocket, Code, Terminal } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ const iconMap: Record<string, React.FC<any>> = {
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const { t } = useLanguage();
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden selection:bg-indigo-500/30">
@@ -39,7 +42,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-indigo-400 font-bold text-xl tracking-tight">
               <Brain className="w-8 h-8" />
-              <span>AI FACTORY</span>
+              <span>{t('aiFactory')}</span>
             </div>
             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400">
               <X size={24} />
@@ -55,7 +58,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
                 }`}
             >
               <LayoutDashboard size={20} />
-              <span className="font-medium">Command Center</span>
+              <span className="font-medium">{t('commandCenter')}</span>
             </button>
 
             <button
@@ -66,11 +69,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
                 }`}
             >
               <Rocket size={20} />
-              <span className="font-medium">Fabrication Processor</span>
+              <span className="font-medium">{t('fabricationProcessor')}</span>
             </button>
 
             <div className="pt-6 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Specialized Agents
+              {t('specializedAgents')}
             </div>
 
             {agents.map((agent) => {
@@ -104,12 +107,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
             })}
           </nav>
 
-          <div className="p-4 border-t border-slate-800">
+          <div className="p-4 border-t border-slate-800 space-y-4">
+            <LanguageToggle />
             <div className="bg-slate-800/50 rounded p-3 text-xs text-slate-500">
-              <p className="font-semibold text-slate-400 mb-1">Government Status</p>
+              <p className="font-semibold text-slate-400 mb-1">{t('governmentStatus')}</p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                Active & Compliant
+                {t('activeCompliant')}
               </div>
             </div>
           </div>

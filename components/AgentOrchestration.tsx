@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { agents } from '../data';
 import { RunState, RunStep } from '../api/_types';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
     Play,
     CheckCircle,
@@ -30,6 +31,7 @@ interface LogEntry {
 export const AgentOrchestration: React.FC = () => {
     const [mission, setMission] = useState('');
     const [runState, setRunState] = useState<RunState | null>(null);
+    const { t } = useLanguage();
     const [isRunning, setIsRunning] = useState(false);
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [readConfirmation, setReadConfirmation] = useState<Record<number, boolean>>({});
@@ -47,7 +49,7 @@ export const AgentOrchestration: React.FC = () => {
         setIsRunning(true);
         setLogs([]);
         setRunState(null);
-        addLog('system', `Initializing v3.1 Factory for: "${mission}"`, 'info');
+        addLog('system', `${t('initializingFactory')} "${mission}"`, 'info');
 
         try {
             const res = await fetch('/api/runs/start', {
@@ -63,10 +65,10 @@ export const AgentOrchestration: React.FC = () => {
 
             const data = await res.json();
             setRunState(data.state);
-            addLog('system', `Run initialized: ${data.runId}`, 'success');
+            addLog('system', `${t('runIdInitialized')} ${data.runId}`, 'success');
 
         } catch (error: any) {
-            addLog('system', `Startup Error: ${error.message}`, 'error');
+            addLog('system', `${t('startupError')} ${error.message}`, 'error');
             setIsRunning(false);
         }
     };
@@ -74,7 +76,7 @@ export const AgentOrchestration: React.FC = () => {
     const executeStep = async (stepNum: number, agentId: string) => {
         if (!runState) return;
 
-        addLog(agentId, `Starting execution (Step ${stepNum})...`, 'info');
+        addLog(agentId, `${t('startingExecution').replace('{step}', stepNum.toString())}`, 'info');
 
         // Optimistic update
         setRunState(prev => {
@@ -96,10 +98,10 @@ export const AgentOrchestration: React.FC = () => {
 
             const data = await res.json();
             setRunState(data.state);
-            addLog(agentId, `Execution completed. Waiting for review.`, 'success');
+            addLog(agentId, t('executionCompletedReview'), 'success');
 
         } catch (error: any) {
-            addLog(agentId, `Execution Failed: ${error.message}`, 'error');
+            addLog(agentId, `${t('executionFailed')} ${error.message}`, 'error');
             setRunState(prev => {
                 if (!prev) return null;
                 const newSteps = [...prev.steps];
@@ -127,10 +129,10 @@ export const AgentOrchestration: React.FC = () => {
 
             const data = await res.json();
             setRunState(data.state);
-            addLog('system', `Step ${stepNum} approved. Moving to next.`, 'info');
+            addLog('system', t('stepApprovedMoved').replace('{step}', stepNum.toString()), 'info');
 
         } catch (error: any) {
-            addLog('system', `Confirmation failed: ${error.message}`, 'error');
+            addLog('system', `${t('confirmationFailed')} ${error.message}`, 'error');
         }
     };
 
@@ -149,8 +151,8 @@ export const AgentOrchestration: React.FC = () => {
     return (
         <div className="space-y-8 pb-12">
             <header className="mb-4">
-                <h1 className="text-4xl font-bold text-white mb-2">Factory v3.1 <span className="text-indigo-400 text-lg">In-Memory Edition</span></h1>
-                <p className="text-slate-400">Manual verification flow enabled. PDF Generation active.</p>
+                <h1 className="text-4xl font-bold text-white mb-2">{t('aiFactory')} v3.1 <span className="text-indigo-400 text-lg">{t('inMemoryEdition')}</span></h1>
+                <p className="text-slate-400">{t('manualVerificationEnabled')} {t('pdfGenerationActive')}</p>
             </header>
 
             {/* Mission Input */}
@@ -160,7 +162,7 @@ export const AgentOrchestration: React.FC = () => {
                         type="text"
                         value={mission}
                         onChange={(e) => setMission(e.target.value)}
-                        placeholder="Define the mission objective..."
+                        placeholder={t('enterMission')}
                         className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white"
                         disabled={!!runState}
                     />
@@ -169,7 +171,7 @@ export const AgentOrchestration: React.FC = () => {
                         disabled={!!runState || !mission}
                         className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white px-6 rounded-lg font-bold flex items-center gap-2"
                     >
-                        {!!runState ? 'RUN ACTIVE' : 'START RUN'}
+                        {!!runState ? t('runActive') : t('startRun')}
                         <Play size={16} fill="currentColor" />
                     </button>
                 </div>
@@ -215,13 +217,13 @@ export const AgentOrchestration: React.FC = () => {
                                 <div className="p-6">
                                     {isPending && isActiveStep(step, runState) && (
                                         <div className="text-center py-8">
-                                            <p className="text-slate-400 mb-4">{agent.mission}</p>
+                                            <p className="text-slate-400 mb-4">{t(agent.mission as any)}</p>
                                             <button
                                                 onClick={() => executeStep(step.step, step.agentId)}
                                                 className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 mx-auto"
                                             >
                                                 <Play size={18} fill="currentColor" />
-                                                EXECUTE AGENT
+                                                {t('executeStep')}
                                             </button>
                                         </div>
                                     )}
@@ -229,7 +231,7 @@ export const AgentOrchestration: React.FC = () => {
                                     {isRunning && (
                                         <div className="flex flex-col items-center justify-center py-12 text-indigo-400">
                                             <Loader2 size={40} className="animate-spin mb-4" />
-                                            <p className="animate-pulse">Thinking & Generating Artifacts...</p>
+                                            <p className="animate-pulse">{t('thinkingGenerating')}</p>
                                         </div>
                                     )}
 
@@ -238,7 +240,7 @@ export const AgentOrchestration: React.FC = () => {
                                             {/* Summary */}
                                             <div className="prose prose-invert max-w-none bg-slate-950 p-4 rounded-lg border border-slate-800">
                                                 <h4 className="text-emerald-400 font-bold flex items-center gap-2 mb-2">
-                                                    <FileText size={16} /> Executive Summary
+                                                    <FileText size={16} /> {t('executiveSummary')}
                                                 </h4>
                                                 <div className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
                                                     {step.deliverables.summaryMarkdown}
@@ -248,7 +250,7 @@ export const AgentOrchestration: React.FC = () => {
                                             {/* Todos */}
                                             <div className="prose prose-invert max-w-none bg-slate-950 p-4 rounded-lg border border-slate-800">
                                                 <h4 className="text-orange-400 font-bold flex items-center gap-2 mb-2">
-                                                    <AlertCircle size={16} /> Action Items & Risks
+                                                    <AlertCircle size={16} /> {t('actionItemsRisks')}
                                                 </h4>
                                                 <div className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
                                                     {step.deliverables.todoMarkdown}
@@ -264,7 +266,7 @@ export const AgentOrchestration: React.FC = () => {
                                                     className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-bold px-4 py-2 hover:bg-white/5 rounded transition-colors"
                                                 >
                                                     <Download size={16} />
-                                                    DOWNLOAD PDF
+                                                    {t('downloadPdf')}
                                                 </a>
 
                                                 {step.agentId === 'lucas' && step.deliverables?.outputJson?.downloadUrl && (
@@ -274,7 +276,7 @@ export const AgentOrchestration: React.FC = () => {
                                                         className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2 rounded shadow-lg shadow-emerald-500/20 transition-all border border-emerald-400/30"
                                                     >
                                                         <Download size={16} />
-                                                        DOWNLOAD PROJECT (.ZIP)
+                                                        {t('downloadProject')}
                                                     </a>
                                                 )}
 
@@ -287,14 +289,14 @@ export const AgentOrchestration: React.FC = () => {
                                                                 onChange={(e) => setReadConfirmation({ ...readConfirmation, [step.step]: e.target.checked })}
                                                                 className="w-5 h-5 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500/50"
                                                             />
-                                                            <span className="text-white text-sm">I have read the documents</span>
+                                                            <span className="text-white text-sm">{t('userReviewed')}</span>
                                                         </label>
                                                         <button
                                                             onClick={() => confirmRead(step.step)}
                                                             disabled={!readConfirmation[step.step]}
                                                             className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white px-4 py-2 rounded font-bold text-sm transition-all"
                                                         >
-                                                            CONTINUE
+                                                            {t('confirmContinue')}
                                                         </button>
                                                     </div>
                                                 )}
@@ -311,7 +313,7 @@ export const AgentOrchestration: React.FC = () => {
                                                 onClick={() => executeStep(step.step, step.agentId)}
                                                 className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded font-bold"
                                             >
-                                                RETRY
+                                                {t('retry')}
                                             </button>
                                         </div>
                                     )}
@@ -324,7 +326,7 @@ export const AgentOrchestration: React.FC = () => {
                 {/* Logs Right Panel */}
                 <div className="lg:col-span-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col max-h-[calc(100vh-200px)] sticky top-4">
                     <div className="p-3 bg-slate-900 border-b border-slate-800 font-mono text-xs font-bold text-slate-400 uppercase">
-                        System Event Log
+                        {t('systemEventLog')}
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
                         {logs.map((log, i) => (

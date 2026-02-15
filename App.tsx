@@ -4,7 +4,7 @@ import { Dashboard } from './components/Dashboard';
 import { AgentDetail } from './components/AgentDetail';
 import { AgentOrchestration } from './components/AgentOrchestration';
 import { agents } from './data';
-import { AgentProfile } from './types';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | string>('dashboard');
@@ -17,22 +17,24 @@ function App() {
   };
 
   return (
-    <Layout
-      currentView={currentView}
-      onNavigate={handleNavigate}
-    >
-      {currentView === 'dashboard' ? (
-        <Dashboard onNavigate={handleNavigate} />
-      ) : currentView === 'orchestration' ? (
-        <AgentOrchestration />
-      ) : activeAgent ? (
-        <AgentDetail agent={activeAgent} />
-      ) : (
-        <div className="flex items-center justify-center h-full text-slate-400">
-          Agent Not Found
-        </div>
-      )}
-    </Layout>
+    <LanguageProvider>
+      <Layout
+        currentView={currentView}
+        onNavigate={handleNavigate}
+      >
+        {currentView === 'dashboard' ? (
+          <Dashboard onNavigate={handleNavigate} />
+        ) : currentView === 'orchestration' ? (
+          <AgentOrchestration />
+        ) : activeAgent ? (
+          <AgentDetail agent={activeAgent} />
+        ) : (
+          <div className="flex items-center justify-center h-full text-slate-400">
+            Agent Not Found
+          </div>
+        )}
+      </Layout>
+    </LanguageProvider>
   );
 }
 

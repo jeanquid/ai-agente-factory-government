@@ -31,20 +31,20 @@ export const governanceRules: GovernanceRule[] = [
 export const agents: AgentProfile[] = [
   {
     id: 'javier',
-    name: 'Aguara',
-    fullName: 'Aguara - AI Architect & Product Lead',
+    name: 'Javier',
+    fullName: 'Javier - AI Architect & Product Lead',
     role: 'The Brain',
-    mission: 'Diseñar la mente y el propósito de cada solución de IA, asegurando que resuelva el problema real del cliente sin alucinar, y validando la calidad final antes de la entrega.',
+    mission: 'javier_mission',
     scope: [
-      'Definir el flujo cognitivo (qué piensa el agente).',
-      'Escribir y versionar los Prompts Base (System Prompts).',
-      'Diseñar las reglas anti-alucinación y validación lógica.',
-      'Aprobar el pase a producción (Visto Bueno final).'
+      'javier_scope_1',
+      'javier_scope_2',
+      'javier_scope_3',
+      'javier_scope_4'
     ],
     outOfScope: [
-      'No toca infraestructura (Martín).',
-      'No diseña esquemas de base de datos (Fabricio).',
-      'No vende ni busca clientes (Agustina).'
+      'javier_out_1',
+      'javier_out_2',
+      'javier_out_3'
     ],
     inputs: [
       'Requerimientos del cliente',
@@ -99,19 +99,19 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'fabricio',
-    name: 'Tatu',
-    fullName: 'Tatu - Data & Memory Architect',
+    name: 'Fabricio',
+    fullName: 'Fabricio - Data & Memory Architect',
     role: 'The Memory',
-    mission: 'Garantizar que los agentes tengan acceso rápido, seguro y estructurado a la información correcta (Memoria), manteniendo la integridad y el rendimiento de los datos.',
+    mission: 'fabricio_mission',
     scope: [
-      'Diseño de Schemas SQL y NoSQL (Vectores).',
-      'Estrategia de RAG (Chunking, Embeddings, Indexación).',
-      'Auditoría de logs de IA (¿Qué preguntó? ¿Qué respondió?).',
-      'Políticas de Backup y Retención de datos.'
+      'fabricio_scope_1',
+      'fabricio_scope_2',
+      'fabricio_scope_3',
+      'fabricio_scope_4'
     ],
     outOfScope: [
-      'No escribe los prompts de negocio (Javier).',
-      'No configura los webhooks de integración (Martín).'
+      'fabricio_out_1',
+      'fabricio_out_2'
     ],
     inputs: [
       'Definiciones de entidades de negocio',
@@ -164,19 +164,19 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'martin',
-    name: 'Mainumby',
-    fullName: 'Mainumby - Automation Engineer',
+    name: 'Martín',
+    fullName: 'Martín - Automation Engineer',
     role: 'The Plumber',
-    mission: 'Conectar los cables. Hacer que las cosas sucedan automáticamente, uniendo el cerebro (Javier) con la memoria (Fabricio) y el mundo exterior (APIs).',
+    mission: 'martin_mission',
     scope: [
-      'Flujos en n8n / Code (Orquestación técnica).',
-      'Integración con APIs externas (Google, Slack, CRMs).',
-      'Gestión de disparadores (Triggers) y errores de ejecución.',
-      'Despliegue de la solución técnica.'
+      'martin_scope_1',
+      'martin_scope_2',
+      'martin_scope_3',
+      'martin_scope_4'
     ],
     outOfScope: [
-      'No define permisos de seguridad de usuarios (Damián).',
-      'No redacta los correos de venta (Agustina).'
+      'martin_out_1',
+      'martin_out_2'
     ],
     inputs: [
       'Diagrama de flujo de Javier',
@@ -228,19 +228,19 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'damian',
-    name: 'Yakaré',
-    fullName: 'Yakaré - Security & IAM Lead',
+    name: 'Damián',
+    fullName: 'Damián - Security & IAM Lead',
     role: 'The Guardian',
-    mission: 'Proteger la plataforma y los datos de los clientes, asegurando que nadie vea lo que no debe y que el sistema sea robusto ante ataques.',
+    mission: 'damian_mission',
     scope: [
-      'Gestión de Identidad y Accesos (IAM).',
-      'Gestión de Secretos (API Keys, DB Credentials).',
-      'Modelado de amenazas y Checklist de paso a Producción.',
-      'Respuesta a Incidentes de seguridad.'
+      'damian_scope_1',
+      'damian_scope_2',
+      'damian_scope_3',
+      'damian_scope_4'
     ],
     outOfScope: [
-      'No optimiza consultas SQL (Fabricio).',
-      'No diseña el producto (Javier).'
+      'damian_out_1',
+      'damian_out_2'
     ],
     inputs: [
       'Arquitectura de Martín y Fabricio',
@@ -292,15 +292,15 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'agustina',
-    name: 'Panambi',
-    fullName: 'Panambi - Growth & Sales Lead',
+    name: 'Agustina',
+    fullName: 'Agustina - Growth & Sales Lead',
     role: 'The Voice',
-    mission: 'Conseguir que el mundo use la plataforma. Traducir el valor técnico en beneficio de negocio y cerrar acuerdos.',
+    mission: 'agustina_mission',
     scope: [
-      'Definición del Mensaje y Propuesta de Valor.',
-      'Material comercial (Landings, One-pagers).',
-      'Prospección y contacto con Estudios/Clientes.',
-      'Feedback de mercado para producto.'
+      'agustina_scope_1',
+      'agustina_scope_2',
+      'agustina_scope_3',
+      'agustina_scope_4'
     ],
     outOfScope: [
       'No toca la base de datos ni la configuración técnica.'
@@ -354,21 +354,21 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'lucas',
-    name: 'Jaguarete',
-    fullName: 'Jaguarete - Code Generator & Builder',
+    name: 'Lucas',
+    fullName: 'Lucas - Code Generator & Builder',
     role: 'The Builder',
-    mission: 'Transformar especificaciones técnicas en código funcional listo para deploy, generando una aplicación completa empaquetada y descargable.',
+    mission: 'lucas_mission',
     scope: [
-      'Generación de código frontend (React/Next.js).',
-      'Generación de código backend (Node.js/Express).',
-      'Implementación de schemas de base de datos.',
-      'Configuración de Docker y deployment.',
-      'Empaquetado de proyecto completo en .zip.'
+      'lucas_scope_1',
+      'lucas_scope_2',
+      'lucas_scope_3',
+      'lucas_scope_4',
+      'lucas_scope_5'
     ],
     outOfScope: [
-      'No diseña la arquitectura (ya viene de Fabricio/Martín).',
-      'No define requerimientos de negocio (ya viene de Javier).',
-      'No vende ni hace marketing (Agustina).'
+      'lucas_out_1',
+      'lucas_out_2',
+      'lucas_out_3'
     ],
     inputs: [
       'System Prompt y flujo cognitivo de Javier',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AgentProfile } from '../types';
 import { governanceRules } from '../data';
 import { Sparkles, Copy, RefreshCw, Terminal, Check } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AgentGeneratorProps {
   agent: AgentProfile;
@@ -12,6 +13,7 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { t } = useLanguage();
 
   const generateProtocol = async () => {
     setIsLoading(true);
@@ -25,7 +27,7 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
         body: JSON.stringify({
           agentId: agent.id,
           tenantId: 'default', // Hardcoded for MVP as per requirements
-          mission: agent.mission,
+          mission: t(agent.mission as any),
           governanceRules: governanceRules, // Optional, but sending for consistency
         }),
       });
@@ -57,10 +59,10 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
         <div>
           <div className="flex items-center gap-2 text-indigo-400 mb-1">
             <Terminal size={20} />
-            <span className="font-mono text-xs font-bold uppercase tracking-widest">Protocol Generator</span>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest">{t('protocolGenerator')}</span>
           </div>
-          <h2 className="text-xl font-bold text-white">Instantiate Agent Core</h2>
-          <p className="text-slate-400 text-sm">Generate the production System Prompt using the Governance Engine (Gemini 2.5).</p>
+          <h2 className="text-xl font-bold text-white">{t('instantiateAgent')}</h2>
+          <p className="text-slate-400 text-sm">{t('generateProductionPrompt')}</p>
         </div>
 
         <button
@@ -77,12 +79,12 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
           {isLoading ? (
             <>
               <RefreshCw className="animate-spin" size={18} />
-              Generating Protocol...
+              {t('generatingProtocol')}
             </>
           ) : (
             <>
               <Sparkles size={18} />
-              Generate System Prompt
+              {t('generatePrompt')}
             </>
           )}
         </button>
@@ -95,7 +97,7 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
               <div className="inline-flex p-3 rounded-full bg-red-900/20 text-red-500 mb-3">
                 <Terminal size={24} />
               </div>
-              <p className="text-red-400 font-bold mb-1">Generation Failed</p>
+              <p className="text-red-400 font-bold mb-1">{t('generationFailed')}</p>
               <p className="text-sm font-mono text-red-400/70">{error}</p>
             </div>
           ) : (
@@ -104,17 +106,17 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
                 <button
                   onClick={copyToClipboard}
                   className="flex items-center gap-2 px-3 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-300 rounded-lg backdrop-blur-sm transition-all border border-slate-600 shadow-xl"
-                  title="Copy to clipboard"
+                  title={t('copy')}
                 >
                   {copied ? (
                     <>
                       <Check size={16} className="text-emerald-400" />
-                      <span className="text-emerald-400 text-xs font-bold">Copied</span>
+                      <span className="text-emerald-400 text-xs font-bold">{t('copied')}</span>
                     </>
                   ) : (
                     <>
                       <Copy size={16} />
-                      <span className="text-xs font-bold">Copy</span>
+                      <span className="text-xs font-bold">{t('copy')}</span>
                     </>
                   )}
                 </button>
