@@ -20,21 +20,15 @@ async function startServer() {
     // Middleware to parse JSON bodies (Vercel does this automatically)
     app.use(bodyParser.json());
 
-    // --- API Routes Configuration ---
     // We need to wrap Vercel-style handlers (req, res) to work with Express
-    const handleVercel = (handlerModule: any) => async (req: any, res: any) => {
+    const handleVercel = (handlerModule: any, moduleName: string) => async (req: any, res: any) => {
         try {
-            // Vercel handlers allow `res.status(code).json(body)`
-            // Express supports this too, but let's ensure compatibility if needed.
-            // The biggest difference is Vercel's helper methods on `res`.
-            // Express `res` has .status() and .json() built-in.
-
-            // Inject Vercel-specific helpers if missing (though Express covers most)
+            console.log(`[Server] API Request: ${req.method} ${req.url} -> ${moduleName}`);
             await handlerModule.default(req, res);
         } catch (err: any) {
-            console.error('API Error:', err);
+            console.error(`[Server] API Error in ${moduleName}:`, err);
             if (!res.headersSent) {
-                res.status(500).json({ error: 'Internal Server Error' });
+                res.status(500).json({ error: 'Internal Server Error', details: err.message });
             }
         }
     };
@@ -77,13 +71,13 @@ async function startServer() {
     app.post('/api/runs/:runId/steps/:step/confirm-read', async (req, res) => {
         const proxyReq = createProxyReq(req, req.params);
         const mod = await import('./api/runs/[runId]/steps/[step]/confirm-read.ts');
-        await handleVercel(mod)(proxyReq, res);
+        await handleVercel(mod, 'api/runs/[runId]/steps/[step]/confirm-read.ts')(proxyReq, res);
     });
 
     app.get('/api/runs/:runId/steps/:step/pdf', async (req, res) => {
         const proxyReq = createProxyReq(req, req.params);
         const mod = await import('./api/runs/[runId]/steps/[step]/pdf.ts');
-        await handleVercel(mod)(proxyReq, res);
+        await handleVercel(mod, 'api/runs/[runId]/steps/[step]/pdf.ts')(proxyReq, res);
     });
 
 
