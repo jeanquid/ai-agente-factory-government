@@ -35,8 +35,7 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "failed",
-      "error": "Agent execution failed"
+      "status": "running"
     },
     {
       "step": 3,
