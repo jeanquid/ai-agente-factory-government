@@ -31,8 +31,8 @@ export const governanceRules: GovernanceRule[] = [
 export const agents: AgentProfile[] = [
   {
     id: 'javier',
-    name: 'Javier',
-    fullName: 'Javier - AI Architect & Product Lead',
+    name: 'Guyra',
+    fullName: 'Guyra - AI Architect & Product Lead',
     role: 'The Brain',
     mission: 'javier_mission',
     scope: [
@@ -99,8 +99,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'fabricio',
-    name: 'Fabricio',
-    fullName: 'Fabricio - Data & Memory Architect',
+    name: 'Mbarakaja',
+    fullName: 'Mbarakaja - Data & Memory Architect',
     role: 'The Memory',
     mission: 'fabricio_mission',
     scope: [
@@ -164,8 +164,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'martin',
-    name: 'Martín',
-    fullName: 'Martín - Automation Engineer',
+    name: "Kapi'yvari",
+    fullName: "Kapi'yvari - Automation Engineer",
     role: 'The Plumber',
     mission: 'martin_mission',
     scope: [
@@ -228,8 +228,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'damian',
-    name: 'Damián',
-    fullName: 'Damián - Security & IAM Lead',
+    name: 'Tatu',
+    fullName: 'Tatu - Security & IAM Lead',
     role: 'The Guardian',
     mission: 'damian_mission',
     scope: [
@@ -292,8 +292,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'agustina',
-    name: 'Agustina',
-    fullName: 'Agustina - Growth & Sales Lead',
+    name: 'Tuyuyu',
+    fullName: 'Tuyuyu - Growth & Sales Lead',
     role: 'The Voice',
     mission: 'agustina_mission',
     scope: [
@@ -354,8 +354,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'lucas',
-    name: 'Lucas',
-    fullName: 'Lucas - Code Generator & Builder',
+    name: 'Jaguarete',
+    fullName: 'Jaguarete - Code Generator & Builder',
     role: 'The Builder',
     mission: 'lucas_mission',
     scope: [
