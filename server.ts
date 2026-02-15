@@ -93,9 +93,15 @@ async function startServer() {
 
     app.use(vite.middlewares);
 
-    // Catch-all route to serve index.html for SPA
-    app.use('*', async (req, res, next) => {
+    // Catch-all route to serve index.html for SPA (Manual fallback)
+    app.use(async (req, res, next) => {
         const url = req.originalUrl;
+
+        // Skip API routes
+        if (url.startsWith('/api')) {
+            return next();
+        }
+
         try {
             // Read index.html
             let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
