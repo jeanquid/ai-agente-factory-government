@@ -132,7 +132,130 @@
     {
       "step": 3,
       "agentId": "martin",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T13:43:45.919Z",
+      "deliverables": {
+        "outputJson": {
+          "n8nWorkflows": [
+            {
+              "name": "GetWeatherByLocation",
+              "description": "Workflow principal para obtener datos meteorológicos actuales para una ubicación específica, procesarlos, almacenarlos y retornarlos.",
+              "trigger": {
+                "type": "Webhook",
+                "method": "POST",
+                "path": "/weather",
+                "inputSchemaReference": "Fabricio's LocationRequestSchema (e.g., { \"location\": \"string\" })"
+              },
+              "nodes": [
+                {
+                  "id": "1",
+                  "type": "Webhook",
+                  "description": "Escucha peticiones POST en /weather para iniciar el flujo. Extrae 'location' del cuerpo de la petición."
+                },
+                {
+                  "id": "2",
+                  "type": "Set",
+                  "description": "Prepara los datos de 'location' para la llamada a la API externa."
+                },
+                {
+                  "id": "3",
+                  "type": "HTTP Request",
+                  "description": "Realiza una llamada GET a la API externa de clima. Utiliza 'WEATHER_API_KEY' de variables de entorno.",
+                  "details": {
+                    "url": "https://api.weatherapi.com/v1/current.json?key={{ $env.WEATHER_API_KEY }}&q={{ $json.location }}",
+                    "method": "GET",
+                    "retryLogic": {
+                      "attempts": 3,
+                      "delay": "exponential backoff",
+                      "onFailure": "Call ErrorHandlingSubworkflow"
+                    }
+                  }
+                },
+                {
+                  "id": "4",
+                  "type": "Function",
+                  "description": "Transforma la respuesta cruda de la API de clima al 'WeatherReportSchema' definido por Fabricio.",
+                  "outputSchemaReference": "Fabricio's WeatherReportSchema"
+                },
+                {
+                  "id": "5",
+                  "type": "PostgreSQL/MongoDB",
+                  "description": "Almacena los datos meteorológicos procesados en la base de datos 'weather_reports'. Las credenciales se obtienen de '$env.DB_CREDENTIALS'.",
+                  "operation": "Upsert (Insert/Update)",
+                  "tableCollection": "weather_reports"
+                },
+                {
+                  "id": "6",
+                  "type": "Respond to Webhook",
+                  "description": "Envía los datos meteorológicos procesados de vuelta al cliente que realizó la petición."
+                }
+              ],
+              "errorHandling": {
+                "type": "Sub-workflow",
+                "reference": "ErrorHandlingSubworkflow",
+                "condition": "On any node failure or unhandled exception"
+              },
+              "documentationLink": "[Placeholder for n8n workflow documentation URL]"
+            },
+            {
+              "name": "ErrorHandlingSubworkflow",
+              "description": "Sub-workflow genérico para manejar y notificar errores en otros workflows.",
+              "trigger": {
+                "type": "Sub-workflow Call",
+                "input": "Error context (node ID, error message, workflow name)"
+              },
+              "nodes": [
+                {
+                  "id": "1",
+                  "type": "Webhook (Catch Error)",
+                  "description": "Recibe el contexto del error de un workflow principal."
+                },
+                {
+                  "id": "2",
+                  "type": "IF",
+                  "description": "Evalúa el tipo o severidad del error para determinar la acción a seguir."
+                },
+                {
+                  "id": "3",
+                  "type": "Email/Slack Notification",
+                  "description": "Envía una notificación de fallo al equipo de operaciones. Credenciales de '$env.EMAIL_CREDENTIALS' o '$env.SLACK_WEBHOOK_URL'.",
+                  "details": {
+                    "message": "Fallo en workflow {{ $json.workflowName }} en nodo {{ $json.nodeId }}: {{ $json.errorMessage }}"
+                  }
+                },
+                {
+                  "id": "4",
+                  "type": "Respond to Workflow",
+                  "description": "Retorna un mensaje de error estandarizado al workflow que lo invocó."
+                }
+              ],
+              "documentationLink": "[Placeholder for n8n error handling sub-workflow documentation URL]"
+            }
+          ],
+          "apiEndpoints": [
+            {
+              "path": "/weather",
+              "method": "POST",
+              "description": "Endpoint para obtener el reporte meteorológico actual para una ubicación. Requiere un JSON en el cuerpo con la clave 'location'.",
+              "inputSchemaReference": "Fabricio's LocationRequestSchema",
+              "outputSchemaReference": "Fabricio's WeatherReportSchema",
+              "associatedWorkflow": "GetWeatherByLocation"
+            }
+          ],
+          "credentialsManagement": {
+            "strategy": "Environment Variables",
+            "details": "Todas las credenciales para servicios externos (APIs de clima, bases de datos, servicios de notificación) se gestionarán como variables de entorno seguras dentro de n8n, como 'WEATHER_API_KEY', 'DB_CREDENTIALS', 'EMAIL_CREDENTIALS', 'SLACK_WEBHOOK_URL'."
+          },
+          "qualityAssuranceNotes": {
+            "errorHandling": "Implementado a través del sub-workflow 'ErrorHandlingSubworkflow' y configurado en nodos críticos como HTTP Request.",
+            "credentialSecurity": "Todas las credenciales se obtienen de variables de entorno, asegurando que no estén hardcodeadas.",
+            "failureNotifications": "Configuradas en el 'ErrorHandlingSubworkflow' para alertar al equipo en caso de fallos."
+          }
+        },
+        "summaryMarkdown": "## Resumen de la Implementación de Flujos de Trabajo n8n para la App Meteorológica\n\nComo Kapi'yvari, El Fontanero, he diseñado los flujos de trabajo (workflows) de n8n y los endpoints de API necesarios para la aplicación meteorológica, basándome en el diagrama de flujo provisto por Javier y los schemas de datos definidos por Fabricio.\n\nEl backend principal se implementa a través de un workflow de n8n denominado `GetWeatherByLocation`. Este flujo se dispara mediante un webhook HTTP POST en el endpoint `/weather`, que recibe una ubicación como entrada. Luego, interactúa con una API externa de clima (utilizando credenciales seguras de variables de entorno), procesa los datos para ajustarse al `WeatherReportSchema` de Fabricio, los almacena en una base de datos (PostgreSQL/MongoDB) y finalmente retorna el reporte meteorológico procesado al cliente.\n\nSe ha puesto un fuerte énfasis en la robustez y la fiabilidad. Se ha incorporado lógica de reintento con retroceso exponencial en las llamadas a APIs externas para manejar fallos transitorios. Además, un `ErrorHandlingSubworkflow` dedicado asegura que cualquier error no manejado sea capturado, notificado al equipo de operaciones (vía email o Slack, usando credenciales de entorno) y que se retorne una respuesta de error estandarizada. Todas las credenciales sensibles se manejan exclusivamente a través de variables de entorno, cumpliendo con las mejores prácticas de seguridad.\n\nEste diseño sienta las bases para un sistema de backend automatizado, escalable y resiliente para la aplicación meteorológica.",
+        "todoMarkdown": "### Próximos Pasos para Kapi'yvari (El Plomero):\n- **1. Implementación de Workflows en n8n:** Crear y configurar los workflows `GetWeatherByLocation` y `ErrorHandlingSubworkflow` directamente en la instancia de n8n.\n- **2. Configuración de Credenciales:** Definir y asegurar todas las variables de entorno necesarias en n8n (p. ej., `WEATHER_API_KEY`, `DB_CREDENTIALS`, `EMAIL_CREDENTIALS`, `SLACK_WEBHOOK_URL`).\n- **3. Conexión con Bases de Datos:** Configurar los nodos de base de datos (PostgreSQL/MongoDB) en n8n utilizando las credenciales de entorno para interactuar con la base de datos según los schemas de Fabricio.\n- **4. Desarrollo de la Función de Transformación:** Implementar el código JavaScript dentro del nodo `Function` para transformar la respuesta de la API externa al `WeatherReportSchema` de Fabricio.\n- **5. Pruebas de Integración End-to-End:** Realizar pruebas exhaustivas del endpoint `/weather` para asegurar que todo el flujo (desde la petición hasta el almacenamiento y la respuesta) funciona correctamente y que el manejo de errores se activa según lo esperado.\n- **6. Documentación Detallada:** Generar la documentación formal de los workflows de n8n, incluyendo capturas de pantalla y descripciones detalladas de cada nodo y su configuración."
+      },
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/3/pdf"
     },
     {
       "step": 4,
