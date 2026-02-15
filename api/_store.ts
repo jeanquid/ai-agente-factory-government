@@ -3,8 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import { uploadOrUpdateTextFile, downloadTextFile, findRunFolder, findOrCreateFolder } from './_github-storage.js';
 
-// Note: In-memory store is removed. Data is now persisted in GitHub.
-// This ensures compatibility with Vercel serverless environments.
+// In-memory store fallback for local development or if GitHub is not configured
+const memoryStore = new Map<string, RunState>();
+
+function isGitHubEnabled() {
+    return !!process.env.GITHUB_ACCESS_TOKEN;
+}
 
 export async function createRun(data: { tenantId: string; mission: string; workflowOrder: string[] }): Promise<RunState> {
     const runId = uuidv4();
@@ -27,17 +31,31 @@ export async function createRun(data: { tenantId: string; mission: string; workf
         artifacts: []
     };
 
-    // Construct persistent path: data/runs/run-{id}
-    const runsFolder = await findOrCreateFolder('runs', 'data');
-    const runFolder = await findOrCreateFolder(`run-${runId}`, runsFolder);
+    if (isGitHubEnabled()) {
+        try {
+            // Construct persistent path: data/runs/run-{id}
+            const runsFolder = await findOrCreateFolder('runs', 'data');
+            const runFolder = await findOrCreateFolder(`run-${runId}`, runsFolder);
 
-    // Save initial state
-    await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(newState, null, 2));
+            // Save initial state
+            await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(newState, null, 2));
+        } catch (error) {
+            console.error('[Store] GitHub persistence failed, falling back to memory:', error);
+            memoryStore.set(runId, newState);
+        }
+    } else {
+        console.log('[Store] GITHUB_ACCESS_TOKEN not found. Using in-memory store.');
+        memoryStore.set(runId, newState);
+    }
 
     return newState;
 }
 
 export async function getRun(runId: string): Promise<RunState | null> {
+    if (!isGitHubEnabled() || memoryStore.has(runId)) {
+        return memoryStore.get(runId) || null;
+    }
+
     try {
         const runFolder = await findRunFolder(runId);
         if (!runFolder) return null;
@@ -46,7 +64,7 @@ export async function getRun(runId: string): Promise<RunState | null> {
         return JSON.parse(content) as RunState;
     } catch (error) {
         console.error(`Error getting run ${runId}:`, error);
-        return null;
+        return memoryStore.get(runId) || null;
     }
 }
 
@@ -57,9 +75,18 @@ export async function updateRun(runId: string, updater: (run: RunState) => void)
     // Apply updates
     updater(run);
 
-    // Persist changes
-    const runFolder = `data/runs/run-${runId}`;
-    await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(run, null, 2));
+    if (isGitHubEnabled()) {
+        try {
+            // Persist changes
+            const runFolder = `data/runs/run-${runId}`;
+            await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(run, null, 2));
+        } catch (error) {
+            console.error(`[Store] GitHub update failed for ${runId}, saving to memory:`, error);
+            memoryStore.set(runId, run);
+        }
+    } else {
+        memoryStore.set(runId, run);
+    }
 
     return run;
 }
