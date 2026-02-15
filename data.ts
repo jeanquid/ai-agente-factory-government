@@ -31,8 +31,8 @@ export const governanceRules: GovernanceRule[] = [
 export const agents: AgentProfile[] = [
   {
     id: 'javier',
-    name: 'Javier',
-    fullName: 'Javier - AI Architect & Product Lead',
+    name: 'Aguara',
+    fullName: 'Aguara - AI Architect & Product Lead',
     role: 'The Brain',
     mission: 'Diseñar la mente y el propósito de cada solución de IA, asegurando que resuelva el problema real del cliente sin alucinar, y validando la calidad final antes de la entrega.',
     scope: [
@@ -99,8 +99,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'fabricio',
-    name: 'Fabricio',
-    fullName: 'Fabricio - Data & Memory Architect',
+    name: 'Tatu',
+    fullName: 'Tatu - Data & Memory Architect',
     role: 'The Memory',
     mission: 'Garantizar que los agentes tengan acceso rápido, seguro y estructurado a la información correcta (Memoria), manteniendo la integridad y el rendimiento de los datos.',
     scope: [
@@ -164,8 +164,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'martin',
-    name: 'Martín',
-    fullName: 'Martín - Automation Engineer',
+    name: 'Mainumby',
+    fullName: 'Mainumby - Automation Engineer',
     role: 'The Plumber',
     mission: 'Conectar los cables. Hacer que las cosas sucedan automáticamente, uniendo el cerebro (Javier) con la memoria (Fabricio) y el mundo exterior (APIs).',
     scope: [
@@ -228,8 +228,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'damian',
-    name: 'Damián',
-    fullName: 'Damián - Security & IAM Lead',
+    name: 'Yakaré',
+    fullName: 'Yakaré - Security & IAM Lead',
     role: 'The Guardian',
     mission: 'Proteger la plataforma y los datos de los clientes, asegurando que nadie vea lo que no debe y que el sistema sea robusto ante ataques.',
     scope: [
@@ -292,8 +292,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'agustina',
-    name: 'Agustina',
-    fullName: 'Agustina - Growth & Sales Lead',
+    name: 'Panambi',
+    fullName: 'Panambi - Growth & Sales Lead',
     role: 'The Voice',
     mission: 'Conseguir que el mundo use la plataforma. Traducir el valor técnico en beneficio de negocio y cerrar acuerdos.',
     scope: [
@@ -354,8 +354,8 @@ export const agents: AgentProfile[] = [
   },
   {
     id: 'lucas',
-    name: 'Lucas',
-    fullName: 'Lucas - Code Generator & Builder',
+    name: 'Jaguarete',
+    fullName: 'Jaguarete - Code Generator & Builder',
     role: 'The Builder',
     mission: 'Transformar especificaciones técnicas en código funcional listo para deploy, generando una aplicación completa empaquetada y descargable.',
     scope: [
