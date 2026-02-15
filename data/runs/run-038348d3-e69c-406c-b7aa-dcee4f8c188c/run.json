@@ -85,7 +85,66 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T03:24:20.475Z",
+      "deliverables": {
+        "outputJson": {
+          "schemaSql": "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";\nCREATE EXTENSION IF NOT EXISTS vector;\n\n-- Tabla de Usuarios\nCREATE TABLE users (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    password_hash VARCHAR(255) NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    last_login_at TIMESTAMP WITH TIME ZONE\n);\n\n-- Tabla de Perfiles de Usuario\nCREATE TABLE profiles (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    name VARCHAR(255) NOT NULL,\n    age INTEGER,\n    gender VARCHAR(50),\n    bio TEXT,\n    location GEOMETRY(Point, 4326), -- Para coordenadas geográficas\n    preferences JSONB, -- Intereses, preferencias de búsqueda, etc.\n    profile_vector VECTOR(1536), -- Vector de embedding para el campo 'bio' y 'preferences'\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(user_id, tenant_id)\n);\n\n-- Índice para búsqueda de similitud en el vector del perfil\nCREATE INDEX ON profiles USING HNSW (profile_vector vector_l2_ops);\n\n-- Tabla de Fotos de Perfil\nCREATE TABLE profile_photos (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,\n    url TEXT NOT NULL,\n    is_main BOOLEAN DEFAULT FALSE,\n    order_index INTEGER DEFAULT 0,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);\n\n-- Tabla de Swipes (Me gusta/No me gusta)\nCREATE TABLE swipes (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    swiper_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    swiped_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    type VARCHAR(50) NOT NULL, -- 'like', 'dislike'\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(swiper_user_id, swiped_user_id, tenant_id)\n);\n\n-- Tabla de Matches (Coincidencias)\nCREATE TABLE matches (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    user1_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    user2_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    matched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(user1_id, user2_id, tenant_id), -- Asegura que un match solo existe una vez\n    CHECK (user1_id != user2_id)\n);\n\n-- Tabla de Conversaciones (Historial de Conversaciones)\nCREATE TABLE conversations (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    match_id UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(match_id, tenant_id)\n);\n\n-- Tabla de Mensajes\nCREATE TABLE messages (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n    sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    content TEXT NOT NULL,\n    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    read_at TIMESTAMP WITH TIME ZONE\n);\n\n-- Tabla de Logs de Auditoría (para registrar interacciones con IA, tokens, etc.)\nCREATE TABLE audit_logs (\n    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n    tenant_id UUID NOT NULL,\n    user_id UUID REFERENCES users(id) ON DELETE SET NULL,\n    action_type VARCHAR(255) NOT NULL, -- e.g., 'AI_PROMPT', 'DATA_ACCESS'\n    resource_type VARCHAR(255),\n    resource_id UUID,\n    details JSONB, -- Contiene prompt_version, input_tokens, output_tokens, response_data, etc.\n    ip_address INET,\n    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);",
+          "estrategiaVectorizacion": {
+            "datosAVectorizar": [
+              "profiles.bio (texto libre del usuario)",
+              "profiles.preferences (si se estructura como texto para búsqueda semántica)"
+            ],
+            "chunkingStrategy": "Para 'profiles.bio' y 'profiles.preferences', el chunking inicial será el texto completo, asumiendo que las bios en una app de citas son concisas. Si las descripciones se vuelven muy extensas, se podría considerar chunking por párrafo o sentencia. No se aplica chunking complejo para PDFs en este contexto de app de citas, sino para datos textuales de perfil.",
+            "modeloEmbedding": "Se recomienda un modelo de embeddings de propósito general como OpenAI Embeddings (text-embedding-ada-002 o posterior) o un modelo de Hugging Face de alto rendimiento (ej., 'all-MiniLM-L6-v2') para convertir el texto en vectores numéricos. El tamaño del vector se define en 1536 para OpenAI ada.",
+            "almacenamientoIndexacion": "Los vectores de los perfiles se almacenarán directamente en la tabla `profiles` utilizando la extensión `pgvector` de PostgreSQL. Se creará un índice HNSW (Hierarchical Navigable Small World) sobre la columna `profile_vector` para permitir búsquedas de similitud eficientes (k-NN).",
+            "usoEnRAG": "Los vectores de perfil se utilizarán para: \n1. Búsqueda de similitud semántica: Encontrar usuarios con intereses o descripciones de perfil similares. \n2. Generación de recomendaciones: Sugerir perfiles basándose en la similitud vectorial con el perfil del usuario actual o con perfiles con los que ha interactuado positivamente. \n3. Asistencia a la conversación (futuro): Generar sugerencias de inicio de conversación o temas basados en los intereses vectorizados de ambos perfiles."
+          },
+          "dashboardPerformanceDB": {
+            "description": "Dashboard para monitorear la salud y rendimiento de la base de datos, con foco en latencia de búsqueda vectorial e integridad de datos.",
+            "metrics": [
+              "Latencia de búsqueda vectorial (ms)",
+              "Latencia de consultas SQL (ms)",
+              "Uso del pool de conexiones de la base de datos (%)",
+              "Uso de CPU de la DB (%)",
+              "Uso de memoria de la DB (%)",
+              "Operaciones de E/S de disco (IOPS)",
+              "Número de conexiones activas",
+              "Estado y tiempo de las últimas copias de seguridad",
+              "Tasa de error de consultas",
+              "Tamaño de la base de datos y crecimiento"
+            ],
+            "chartLabel": "Vector Search Latency (ms)",
+            "chartData": [
+              {
+                "name": "Week 1",
+                "value": 350
+              },
+              {
+                "name": "Week 2",
+                "value": 210
+              },
+              {
+                "name": "Week 3",
+                "value": 145
+              },
+              {
+                "name": "Week 4",
+                "value": 120
+              }
+            ]
+          },
+          "politicaRetencionDatos": {
+            "usuariosInactivos": "Perfiles de usuarios inactivos por más de 12 meses serán anonimizados o archivados. Datos personales (email, nombre) serán eliminados tras 24 meses de inactividad, manteniendo datos agregados para análisis.",
+            "mensajesConversaciones": "Mensajes y conversaciones se retendrán mientras la cuenta del usuario esté activa. Tras la eliminación o anonimización de la cuenta, los mensajes asociados serán eliminados o anonimizados tras 30 días.",
+            "logsAuditoria": "Logs de auditoría se retendrán por 90 días para fines de seguridad y cumplimiento, con logs críticos (ej. acceso a datos sensibles, uso de IA) extendiéndose a 1 año.",
+            "swipes": "Datos de swipes se retendrán por 6 meses para mejorar el algoritmo de matching, luego serán agregados y eliminados a nivel individual."
+          }
+        },
+        "summaryMarkdown": "## Informe de Arquitectura de Datos - App de Citas\n\nComo Fabricio, el Arquitecto de Datos y Memoria, he diseñado el esquema de base de datos relacional y la estrategia de vectorización para la app de citas. El esquema SQL está normalizado para PostgreSQL, incluyendo tablas clave como `users`, `profiles`, `matches`, `conversations`, y `messages`, todas con soporte multi-tenant (`tenant_id`).\n\nSe ha definido una estrategia de vectorización para los campos `profiles.bio` y `profiles.preferences` utilizando `pgvector` para permitir búsquedas de similitud semántica y mejorar el motor de recomendaciones. Esto aborda la necesidad de procesar datos no estructurados de manera eficiente. Además, se ha diseñado una tabla `audit_logs` para capturar interacciones críticas, incluyendo el uso de IA y el registro de tokens de entrada/salida, cumpliendo con los requisitos de auditoría y rendimiento. Se propone un dashboard de performance para monitorear la latencia de búsqueda vectorial y la salud general de la DB, y se esboza una política de retención de datos para asegurar el cumplimiento y la gestión de la información.",
+        "todoMarkdown": "### Próximos Pasos:\n- **Revisión del Schema SQL:** Presentar el `schema.sql` detallado a Javier (The Brain) y otros agentes para validación de entidades y atributos.\n- **Selección de Modelo de Embedding:** Confirmar el modelo de embedding específico (ej., OpenAI, Sentence Transformers) y el tamaño del vector a utilizar.\n- **Definición de Políticas de Backup:** Establecer un plan concreto de backups automáticos y recuperación de desastres, incluyendo frecuencia y ubicación de almacenamiento.\n- **Implementación de Pipelines de Ingestión:** Diseñar y empezar a implementar los pipelines para la ingestión de datos de perfil y la generación de sus embeddings.\n- **Configuración de Monitorización:** Configurar las herramientas de monitoreo para el `Dashboard de Performance de DB`, prestando especial atención a la latencia de búsqueda vectorial y el uso de recursos.\n- **Detallar Políticas de Privacidad:** Colaborar con el equipo para formalizar las políticas de privacidad y anonimización de datos, especialmente en relación con la retención y eliminación."
+      },
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/2/pdf"
     },
     {
       "step": 3,
