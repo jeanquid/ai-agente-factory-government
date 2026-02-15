@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const defaultWorkflow = ['javier', 'fabricio', 'martin', 'damian', 'agustina'];
 
-        const runState = createRun({
+        const runState = await createRun({
             tenantId,
             mission,
             workflowOrder: workflowOrder || defaultWorkflow

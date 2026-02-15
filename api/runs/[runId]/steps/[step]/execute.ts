@@ -27,10 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const runState = getRun(runId as string);
+        const runState = await getRun(runId as string);
 
         if (!runState) {
-            return res.status(404).json({ error: 'Run not found (Memory might have flushed)' });
+            return res.status(404).json({ error: 'Run not found (Memory might have flushed or GitHub unreachable)' });
         }
 
         const stepIndex = stepNum - 1;
@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Update status to running
-        updateRun(runId as string, (run) => {
+        await updateRun(runId as string, (run) => {
             run.steps[stepIndex].status = 'running';
             run.steps[stepIndex].error = undefined;
         });
@@ -71,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const result = await executeAgent(currentStep.agentId, runState, context);
 
         // Save Result
-        const updatedRun = updateRun(runId as string, (run) => {
+        const updatedRun = await updateRun(runId as string, (run) => {
             const s = run.steps[stepIndex];
             s.status = 'in_review';
             s.finishedAt = new Date().toISOString();
@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error('Execute Step Error:', error);
 
         // Update status to error
-        const failedRun = updateRun(runId as string, (run) => {
+        const failedRun = await updateRun(runId as string, (run) => {
             // Safe update attempt
             if (run.steps[stepNum - 1]) {
                 run.steps[stepNum - 1].status = 'failed';

@@ -1,17 +1,17 @@
 import { RunState, RunStep } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
+// @ts-ignore
+import { uploadOrUpdateTextFile, downloadTextFile, findRunFolder, findOrCreateFolder } from './_github-storage.js';
 
-// Singleton in-memory store
-// Note: This data is lost on Vercel cold starts or redeployments.
-// This is acceptable behavior for v3.1 per user requirements.
-const runs = new Map<string, RunState>();
+// Note: In-memory store is removed. Data is now persisted in GitHub.
+// This ensures compatibility with Vercel serverless environments.
 
-export function createRun(data: { tenantId: string; mission: string; workflowOrder: string[] }): RunState {
+export async function createRun(data: { tenantId: string; mission: string; workflowOrder: string[] }): Promise<RunState> {
     const runId = uuidv4();
     const steps: RunStep[] = data.workflowOrder.map((agentId, index) => ({
         step: index + 1,
         agentId,
-        status: index === 0 ? 'pending' : 'pending' // Only first step is actionable, but all are technically pending
+        status: 'pending'
     }));
 
     const newState: RunState = {
@@ -21,23 +21,45 @@ export function createRun(data: { tenantId: string; mission: string; workflowOrd
         createdAt: new Date().toISOString(),
         workflow: {
             order: data.workflowOrder,
-            currentStep: 0, // 0-indexed cursor for workflow array (matches step 1)
+            currentStep: 0,
         },
         steps,
         artifacts: []
     };
 
-    runs.set(runId, newState);
+    // Construct persistent path: data/runs/run-{id}
+    const runsFolder = await findOrCreateFolder('runs', 'data');
+    const runFolder = await findOrCreateFolder(`run-${runId}`, runsFolder);
+
+    // Save initial state
+    await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(newState, null, 2));
+
     return newState;
 }
 
-export function getRun(runId: string): RunState | null {
-    return runs.get(runId) || null;
+export async function getRun(runId: string): Promise<RunState | null> {
+    try {
+        const runFolder = await findRunFolder(runId);
+        if (!runFolder) return null;
+
+        const content = await downloadTextFile(`${runFolder}/run.json`);
+        return JSON.parse(content) as RunState;
+    } catch (error) {
+        console.error(`Error getting run ${runId}:`, error);
+        return null;
+    }
 }
 
-export function updateRun(runId: string, updater: (run: RunState) => void): RunState {
-    const run = runs.get(runId);
+export async function updateRun(runId: string, updater: (run: RunState) => void): Promise<RunState> {
+    const run = await getRun(runId);
     if (!run) throw new Error(`Run ${runId} not found`);
+
+    // Apply updates
     updater(run);
+
+    // Persist changes
+    const runFolder = `data/runs/run-${runId}`;
+    await uploadOrUpdateTextFile(runFolder, 'run.json', JSON.stringify(run, null, 2));
+
     return run;
 }

@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'read must be true' });
         }
 
-        const runState = getRun(runId as string);
+        const runState = await getRun(runId as string);
         if (!runState) return res.status(404).json({ error: 'Run not found' });
 
         const stepIndex = stepNum - 1;
@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(404).json({ error: 'Step not found' });
         }
 
-        const updatedRun = updateRun(runId as string, (run) => {
+        const updatedRun = await updateRun(runId as string, (run) => {
             const s = run.steps[stepIndex];
             s.readConfirmed = true;
             s.status = 'done';
