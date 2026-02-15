@@ -97,8 +97,7 @@
     {
       "step": 3,
       "agentId": "martin",
-      "status": "failed",
-      "error": "Quota / rate limit error"
+      "status": "running"
     },
     {
       "step": 4,
