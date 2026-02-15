@@ -44,8 +44,7 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "failed",
-      "error": "Quota / rate limit error"
+      "status": "running"
     },
     {
       "step": 3,
