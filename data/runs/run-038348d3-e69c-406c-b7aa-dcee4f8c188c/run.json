@@ -17,7 +17,69 @@
     {
       "step": 1,
       "agentId": "javier",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T03:22:52.310Z",
+      "deliverables": {
+        "outputJson": {
+          "appName": "Conexión IA",
+          "missionStatement": "Facilitar la creación de conexiones significativas y duraderas entre individuos, utilizando inteligencia artificial para optimizar la compatibilidad y la experiencia del usuario, garantizando un entorno seguro y auténtico.",
+          "coreFeatures": [
+            {
+              "name": "profileManagement",
+              "description": "Creación y gestión de perfiles detallados (fotos, biografía, intereses, hobbies, preferencias de relación)."
+            },
+            {
+              "name": "smartMatchingEngine",
+              "description": "Algoritmo de IA para sugerir matches basados en compatibilidad de intereses, valores, ubicación y preferencias definidas por el usuario."
+            },
+            {
+              "name": "intuitiveDiscovery",
+              "description": "Interfaz de exploración de perfiles (swipe) con filtros avanzados y recomendaciones personalizadas."
+            },
+            {
+              "name": "secureMessaging",
+              "description": "Chat en tiempo real, seguro y privado entre usuarios que han hecho 'match'."
+            },
+            {
+              "name": "safetyAndModeration",
+              "description": "Herramientas de reporte y bloqueo de usuarios, complementadas con un sistema de moderación proactivo impulsado por IA para detectar contenido inapropiado o comportamiento fraudulento."
+            }
+          ],
+          "cognitiveFlowDiagram": "graph TD\n    A[Inicio/Registro] --> B{Creación de Perfil};\n    B --> C{Configuración de Preferencias};\n    C --> D[Algoritmo de Matching];\n    D --> E{Exploración de Perfiles};\n    E -- \"Swipe/Like\" --> F{Match?};\n    F -- \"Sí\" --> G[Chat entre Matches];\n    F -- \"No\" --> E;\n    G --> H[Gestión de Perfil/Interacciones];\n    H --> D;\n    H --> I[Reporte/Bloqueo];\n    I --> J[Moderación];\n    J --> H;",
+          "keyAcceptanceCriteria": [
+            "El 90% de los usuarios activos reporta que las sugerencias de matches son relevantes para sus preferencias explícitas.",
+            "La tasa de reportes por contenido inapropiado o comportamiento fraudulento es inferior al 0.5% del total de interacciones de chat.",
+            "El 85% de los usuarios que inician el proceso de registro completan la creación de su perfil y configuración de preferencias.",
+            "La privacidad y seguridad de los datos del usuario están garantizadas, cumpliendo con las regulaciones de protección de datos (ej. GDPR, CCPA).",
+            "El tiempo promedio para que un usuario activo reciba su primer 'match' relevante es inferior a 24 horas."
+          ],
+          "antiHallucinationRules": [
+            {
+              "ruleName": "Relevancia del Match Estricta",
+              "description": "El algoritmo de matching SOLO sugerirá perfiles que cumplan con al menos el 70% de las preferencias explícitas del usuario (ej. rango de edad, distancia máxima, orientación). Si no hay suficientes perfiles que cumplan este umbral, el sistema indicará la falta de matches en lugar de sugerir perfiles irrelevantes.",
+              "enforcement": "Algoritmo de IA y filtros de búsqueda."
+            },
+            {
+              "ruleName": "Integridad y Verificación de Perfil",
+              "description": "Toda la información del perfil (texto, imágenes) debe pasar por un filtro de moderación (IA y/o humana) antes de ser visible. Contenido ofensivo, explícito o engañoso será rechazado o marcado para revisión. No se permite la invención de datos de perfil. Se priorizará la implementación de verificación de identidad (ej. foto selfie con documento) para reducir perfiles falsos.",
+              "enforcement": "Sistema de moderación de contenido y proceso de verificación de usuario."
+            },
+            {
+              "ruleName": "Privacidad de Datos del Usuario",
+              "description": "El sistema NUNCA compartirá información personal sensible (números de teléfono, direcciones exactas, apellidos completos) a otros usuarios a menos que sea explícitamente autorizado y configurado por el usuario. Los datos de geolocalización solo se utilizarán para el matching por distancia y no se mostrará la ubicación exacta.",
+              "enforcement": "Arquitectura de seguridad de datos y controles de privacidad del usuario."
+            },
+            {
+              "ruleName": "Comunicación Auténtica",
+              "description": "El sistema de chat no permitirá el envío automático de mensajes predefinidos o generados por IA que simulen una conversación real sin intervención explícita del usuario. Cualquier sugerencia de IA para mensajes debe ser claramente identificable como tal y requerir aprobación del usuario.",
+              "enforcement": "Lógica de la interfaz de chat y monitoreo de patrones de mensajería."
+            }
+          ]
+        },
+        "summaryMarkdown": "## Diseño Conceptual de \"Conexión IA\": La Mente Detrás de Tu Próxima Conexión\n\nComo Javier, \"El Cerebro\", he diseñado la arquitectura lógica y el propósito fundamental de \"Conexión IA\", una aplicación de citas innovadora. El objetivo principal es trascender la superficialidad, facilitando conexiones genuinas y duraderas mediante un motor de matching inteligente y un entorno seguro.\n\nHemos definido un flujo cognitivo claro para la interacción del usuario, desde el registro hasta el chat y la gestión de perfiles. Las características clave incluyen una gestión de perfiles robusta, un motor de matching impulsado por IA, una experiencia de descubrimiento intuitiva y, crucialmente, fuertes medidas de seguridad y moderación.\n\nSe han establecido criterios de aceptación rigurosos y \"reglas anti-alucinación\" para asegurar que el algoritmo siempre priorice la relevancia y autenticidad de los matches, y que la integridad de los datos del usuario y la seguridad de la plataforma sean inquebrantables. Este diseño sienta las bases para una aplicación que no solo conecta, sino que entiende y protege a sus usuarios.",
+        "todoMarkdown": "### Próximos Pasos (Según el Rol de Javier - El Cerebro)\n-   **1. Refinar Requerimientos Detallados:** Trabajar con Agustina (o el cliente) para desglosar cada característica en historias de usuario y requerimientos funcionales específicos.\n-   **2. Especificar el Algoritmo de Matching:** Detallar los parámetros y pesos exactos que el motor de IA utilizará para calcular la compatibilidad, incluyendo consideraciones de privacidad y sesgos.\n-   **3. Diseñar Pruebas de Alucinación/Relevancia:** Crear un set de casos de prueba específicos para validar que el algoritmo de matching NO sugiere perfiles irrelevantes o que no cumplen las preferencias mínimas del usuario.\n-   **4. Definir Protocolos de Moderación IA:** Especificar los umbrales y tipos de contenido que el sistema de IA debe detectar, las acciones automáticas/manuales a seguir y los procesos de apelación.\n-   **5. Preparar \"Visto Bueno\" Final:** Documentar los criterios para la aprobación final del pase a producción, asegurando que todos los aspectos de seguridad, relevancia y experiencia de usuario se cumplan antes del lanzamiento."
+      },
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/1/pdf"
     },
     {
       "step": 2,
