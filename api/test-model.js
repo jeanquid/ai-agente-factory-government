@@ -31,45 +31,6 @@ export default async function handler(req, res) {
 
         console.log(`[Test Model] Testing: ${model}`);
 
-        // Handle Claude models
-        if (model.startsWith('claude-')) {
-            const anthropicKey = process.env.ANTHROPIC_API_KEY;
-            if (!anthropicKey) {
-                return res.status(200).json({
-                    ok: false,
-                    message: 'ANTHROPIC_API_KEY not configured'
-                });
-            }
-
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': anthropicKey,
-                    'anthropic-version': '2023-06-01'
-                },
-                body: JSON.stringify({
-                    model: model,
-                    max_tokens: 50,
-                    messages: [{ role: 'user', content: 'Say OK' }]
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.text();
-                return res.status(200).json({
-                    ok: false,
-                    message: `Claude error: ${error.substring(0, 100)}`
-                });
-            }
-
-            return res.status(200).json({
-                ok: true,
-                message: 'Claude connection successful',
-                model: model
-            });
-        }
-
         // Handle Gemini models
         const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         if (!geminiKey) {

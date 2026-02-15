@@ -25,7 +25,7 @@ const AVAILABLE_MODELS = [
         provider: 'google',
         speed: 3,
         cost: 1,
-        description: 'Ultra rápido para tareas sencillas'
+        description: 'Ultra rápido, ideal para alta demanda'
     },
     {
         id: 'gemini-2.0-flash-exp',
@@ -33,15 +33,15 @@ const AVAILABLE_MODELS = [
         provider: 'google',
         speed: 3,
         cost: 2,
-        description: 'Nueva generación (puede ser inestable)'
+        description: 'Nueva generación - puede tener límites menores'
     },
     {
-        id: 'claude-3-5-sonnet-20241022',
-        name: 'Claude Sonnet 3.5',
-        provider: 'anthropic',
+        id: 'gemini-pro',
+        name: 'Gemini Pro (Alias)',
+        provider: 'google',
         speed: 2,
-        cost: 4,
-        description: 'Modelo Premium con alta precisión'
+        cost: 2,
+        description: 'Alias que apunta al modelo Pro más reciente'
     }
 ];
 
