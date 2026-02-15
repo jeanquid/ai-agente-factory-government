@@ -411,7 +411,99 @@
     {
       "step": 5,
       "agentId": "agustina",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T03:34:06.758Z",
+      "deliverables": {
+        "outputJson": {
+          "appName": "Vínculo Real",
+          "valueProposition": {
+            "headline": "Vínculo Real: Conecta con tu alma gemela. Más allá del swipe: Relaciones auténticas y duraderas.",
+            "problem": "¿Cansado de apps de citas superficiales, perfiles falsos y conversaciones sin rumbo? Encontrar una conexión genuina en el mundo digital puede parecer imposible.",
+            "solution": "Vínculo Real te ofrece una plataforma segura e inteligente para conocer personas compatibles. Nos enfocamos en la calidad sobre la cantidad, utilizando algoritmos avanzados y un proceso de verificación para asegurar que cada interacción cuente y construya relaciones duraderas basadas en intereses compartidos y valores profundos.",
+            "keyBenefits": [
+              "Conexiones Genuinas: Filtramos la superficialidad para que encuentres a alguien que realmente te entienda.",
+              "Ahorra Tiempo: Nuestro algoritmo inteligente te conecta con perfiles altamente compatibles.",
+              "Seguridad y Confianza: Verificación de perfiles para una comunidad más segura y real.",
+              "Experiencia Personalizada: Ajusta tus preferencias para encontrar exactamente lo que buscas."
+            ]
+          },
+          "marketingOnePager": {
+            "title": "Vínculo Real: Tu Camino Hacia Conexiones Auténticas",
+            "sections": [
+              {
+                "heading": "El Desafío Actual en las Citas Online",
+                "content": "La búsqueda de una pareja compatible en el entorno digital está plagada de perfiles falsos, interacciones superficiales y la frustración de no encontrar lo que realmente buscas. ¿Y si existiera una app que priorizara la autenticidad y la profundidad?"
+              },
+              {
+                "heading": "¿Qué es Vínculo Real?",
+                "content": "Vínculo Real es la plataforma de citas diseñada para quienes valoran la autenticidad y buscan relaciones significativas. Nuestra misión es empoderarte para que encuentres a tu alma gemela, con un enfoque en la compatibilidad genuina y la seguridad del usuario."
+              },
+              {
+                "heading": "¿Cómo Funciona?",
+                "list": [
+                  "**Crea tu Perfil Auténtico:** Define quién eres, tus pasiones, valores y lo que esperas de una relación.",
+                  "**Descubre la Compatibilidad:** Nuestro algoritmo avanzado te sugiere perfiles con alta afinidad, basados en tus preferencias y respuestas.",
+                  "**Conecta y Conversa:** Inicia conversaciones significativas con personas que realmente resuenan contigo.",
+                  "**Encuentra tu Vínculo Real:** Transforma tus matches en citas reales y construye relaciones duraderas."
+                ]
+              },
+              {
+                "heading": "Beneficios Exclusivos de Vínculo Real",
+                "list": [
+                  "**Conexiones Genuinas:** Olvídate de lo superficial. Te conectamos con personas que comparten tus intereses y valores.",
+                  "**Eficiencia y Precisión:** Ahorra tiempo con nuestro algoritmo que te presenta perfiles verdaderamente compatibles.",
+                  "**Comunidad Segura:** Nuestro riguroso proceso de verificación de perfiles garantiza un entorno de confianza.",
+                  "**Experiencia Premium:** Funcionalidades avanzadas para una búsqueda más efectiva y personalizada."
+                ]
+              },
+              {
+                "heading": "Llamada a la Acción",
+                "content": "Descarga Vínculo Real hoy y comienza tu viaje hacia una conexión significativa y duradera. Tu alma gemela te espera."
+              }
+            ]
+          },
+          "pricingStrategy": {
+            "model": "Freemium con Suscripción Premium",
+            "freeFeatures": [
+              "Creación de perfil completo",
+              "Swipes limitados por día",
+              "Chat básico con matches"
+            ],
+            "premiumFeatures": {
+              "name": "Vínculo Real Premium",
+              "benefits": [
+                "Swipes ilimitados",
+                "Mensajes prioritarios",
+                "Ver quién te ha dado 'like' (Matches ocultos)",
+                "Filtros avanzados de búsqueda (valores, estilo de vida, etc.)",
+                "Boost de perfil (mayor visibilidad por un tiempo limitado)",
+                "Experiencia sin anuncios"
+              ],
+              "betaPricing": {
+                "monthly": "$9.99 USD/mes",
+                "quarterly": "$24.99 USD/trimestre (equivalente a $8.33/mes)",
+                "annually": "$79.99 USD/año (equivalente a $6.67/mes)",
+                "launchOffer": "50% de descuento en la primera suscripción para usuarios beta."
+              }
+            }
+          },
+          "targetAudience": {
+            "demographics": "Hombres y mujeres, 25-45 años, con educación media/superior, residentes en grandes ciudades.",
+            "psychographics": "Buscan relaciones serias y significativas, valoran la autenticidad y la profundidad, están cansados de la superficialidad de otras apps de citas, profesionales, con intereses y valores definidos, dispuestos a invertir tiempo y/o dinero en encontrar una pareja compatible."
+          },
+          "acquisitionChannels": [
+            "App Store Optimization (ASO) en Google Play y Apple App Store.",
+            "Marketing de Contenidos: Blog con consejos de relaciones, historias de éxito, guías de citas.",
+            "Publicidad en Redes Sociales: Campañas segmentadas en Instagram, Facebook, TikTok (Meta Ads, TikTok Ads) y Google Ads.",
+            "Influencer Marketing: Colaboraciones con coaches de relaciones, psicólogos, y micro-influencers de estilo de vida.",
+            "Relaciones Públicas (PR): Apariciones en medios relevantes (revistas, blogs de estilo de vida, podcasts).",
+            "Eventos Offline: Patrocinio o creación de eventos de speed dating, meetups temáticos, actividades sociales para generar comunidad."
+          ]
+        },
+        "summaryMarkdown": "## Estrategia de Lanzamiento para Vínculo Real: La App de Citas Auténticas\n\nComo Agustina, 'The Voice', he delineado la propuesta de valor, el mensaje comercial y la estrategia inicial de mercado para **Vínculo Real**, una nueva app de citas enfocada en conexiones genuinas y significativas. La app se posiciona como una alternativa a las plataformas superficiales, ofreciendo un algoritmo de compatibilidad avanzado y un fuerte énfasis en la verificación de perfiles para fomentar la confianza y la seguridad.\n\nEl **One-Pager** comercial está diseñado para comunicar claramente el problema que resolvemos (la superficialidad y frustración en las citas online) y cómo Vínculo Real ofrece una solución efectiva a través de conexiones auténticas, eficiencia y seguridad. Se ha definido un modelo **Freemium** con una suscripción **Premium** que desbloquea funciones avanzadas, con precios beta competitivos y una oferta de lanzamiento.\n\nLa estrategia de adquisición de usuarios se centrará en canales digitales como ASO, redes sociales y marketing de influencers, complementada con PR y posibles eventos offline para construir comunidad y confianza. El público objetivo son individuos de 25 a 45 años que buscan relaciones serias y valoran la autenticidad.\n\nMi objetivo es traducir el valor técnico del producto en beneficios tangibles para el usuario, asegurando que el mensaje resuene con nuestra audiencia y genere un pipeline sólido de usuarios activos y suscriptores.",
+        "todoMarkdown": "### Próximos Pasos para Agustina (The Voice):\n- **1. Finalizar One-Pager y Material Visual:** Redactar el contenido final del One-Pager comercial de 'Vínculo Real' y colaborar con diseño para incorporar gráficos placeholder y llamados a la acción claros.\n- **2. Validar Pricing Beta con Prospectos:** Realizar encuestas o entrevistas cortas con al menos 10 prospectos del público objetivo para validar la percepción de valor y la aceptación de los precios beta para las funciones Premium.\n- **3. Desarrollar Estrategia de Contenidos Inicial:** Crear un plan inicial de contenidos para redes sociales y blog, enfocándose en historias de éxito (hipotéticas para el lanzamiento), consejos de citas auténticas y beneficios de 'Vínculo Real'.\n- **4. Identificar y Contactar Influencers Clave:** Investigar y contactar a 5-10 micro-influencers o coaches de relaciones que resuenen con la propuesta de valor de 'Vínculo Real' para posibles colaboraciones beta y campañas de lanzamiento.\n- **5. Preparar Script de Onboarding y Demos:** Diseñar el flujo de experiencia de usuario (UX) inicial y un script para 'demostrar' el valor de la app a nuevos usuarios y early adopters, destacando la facilidad de uso y las funcionalidades clave."
+      },
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/5/pdf"
     }
   ],
   "artifacts": []
