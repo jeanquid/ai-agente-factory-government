@@ -11,7 +11,7 @@
       "damian",
       "agustina"
     ],
-    "currentStep": 3
+    "currentStep": 4
   },
   "steps": [
     {
@@ -302,7 +302,7 @@
     {
       "step": 4,
       "agentId": "damian",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T03:32:35.397Z",
       "deliverables": {
         "outputJson": {
@@ -405,7 +405,8 @@
         "summaryMarkdown": "## Informe de Seguridad - Fase 1: Planificación y Diseño (Damián - The Guardian)\n\nComo The Guardian, he completado la fase inicial de revisión de seguridad para la aplicación de citas, enfocándome en sentar las bases para una plataforma robusta y confiable. Mi misión es salvaguardar la plataforma y los datos de los clientes, asegurando la confidencialidad, integridad y disponibilidad.\n\n### Hitos Alcanzados:\n\n*   **Matriz de Roles y Permisos (RBAC):** Se ha definido una matriz exhaustiva de roles (Usuario Registrado, Moderador, Administrador, Equipo de Desarrollo, Cuentas de Servicio) con permisos detallados. Esto garantiza la aplicación del **principio de menor privilegio**, fundamental para limitar el acceso a los datos y funcionalidades sensibles.\n*   **Evaluación Inicial de Vulnerabilidades:** He realizado una inspección preliminar identificando áreas críticas de riesgo como la posible existencia de secretos hardcodeados, la necesidad de un robusto control de acceso, el cifrado de datos sensibles (PII) en reposo y tránsito, y la protección contra vulnerabilidades de inyección y APIs inseguras.\n*   **Recomendaciones para Bóveda de Secretos:** Se han establecido directrices claras para la gestión segura de credenciales y claves API, haciendo hincapié en el uso de un Secret Manager dedicado, la rotación automática de claves y el acceso basado en identidad.\n\nEsta fase ha establecido un marco de seguridad inicial, priorizando la protección de la información del usuario y la resiliencia del sistema frente a posibles ataques. La seguridad se integra desde el diseño, anticipando y mitigando riesgos antes de la implementación.",
         "todoMarkdown": "### Próximos Pasos para The Guardian:\n\n-   **Auditoría de Código Estática (SAST):** Ejecutar herramientas SAST en el repositorio de código base para identificar y remediar cualquier secreto hardcodeado, dependencias vulnerables y patrones de codificación inseguros.\n-   **Configuración de RLS:** Colaborar activamente con Fabricio (The Memory) para diseñar e implementar las políticas de Row Level Security (RLS) en la base de datos, asegurando un control granular sobre el acceso a los datos sensibles de los usuarios.\n-   **Integración de Secret Manager:** Trabajar con Martín (The Plumber) para integrar un sistema de gestión de secretos (ej. HashiCorp Vault, AWS Secrets Manager) en la arquitectura, definiendo los flujos de acceso seguro para los microservicios y el equipo de desarrollo.\n-   **Modelado de Amenazas:** Realizar un taller de modelado de amenazas para identificar vectores de ataque específicos y diseñar contramedidas para los componentes clave de la aplicación.\n-   **Plan de Respuesta a Incidentes (IRP):** Desarrollar un borrador del Plan de Respuesta a Incidentes de Seguridad, incluyendo procedimientos de detección, contención, erradicación y recuperación.\n-   **Revisión de Cumplimiento Normativo:** Iniciar la evaluación de los requisitos de cumplimiento normativo (ej. GDPR) para asegurar que la gestión y protección de datos personales esté alineada con las regulaciones aplicables."
       },
-      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/4/pdf"
+      "pdfUrl": "/api/runs/038348d3-e69c-406c-b7aa-dcee4f8c188c/steps/4/pdf",
+      "readConfirmed": true
     },
     {
       "step": 5,
