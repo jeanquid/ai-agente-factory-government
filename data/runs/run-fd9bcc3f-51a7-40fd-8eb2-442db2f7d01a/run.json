@@ -1,0 +1,50 @@
+{
+  "runId": "fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a",
+  "tenantId": "default",
+  "mission": "crea una app de meteoritos, quiero saber donde cayeron",
+  "createdAt": "2026-02-15T05:32:21.146Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina",
+      "lucas"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "agentId": "lucas",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
