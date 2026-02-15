@@ -1,0 +1,50 @@
+{
+  "runId": "c05b72b6-9d09-4948-8eb5-41b7df823ea3",
+  "tenantId": "default",
+  "mission": " crea una app de meteorologia",
+  "createdAt": "2026-02-15T14:26:17.291Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina",
+      "lucas"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "agentId": "lucas",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
