@@ -12,7 +12,7 @@
       "agustina",
       "lucas"
     ],
-    "currentStep": 3
+    "currentStep": 4
   },
   "steps": [
     {
@@ -261,7 +261,7 @@
     {
       "step": 4,
       "agentId": "damian",
-      "status": "in_review",
+      "status": "done",
       "finishedAt": "2026-02-15T13:45:39.764Z",
       "deliverables": {
         "outputJson": {
@@ -357,7 +357,8 @@
         "summaryMarkdown": "## Resumen Ejecutivo de Seguridad para la App Meteorológica\n\nComo Tatu, El Guardián, he revisado la misión de crear una aplicación meteorológica desde una perspectiva de seguridad. Mi análisis se centra en establecer una base sólida para proteger la información y garantizar la resiliencia de la aplicación.\n\n### Hallazgos Clave:\n\n1.  **Modelo de Roles y Permisos (RBAC):** Se ha definido una matriz de roles (`Usuario Final`, `Administrador`) con permisos granularizados para asegurar el principio de menor privilegio. Esto es crucial para limitar el acceso a funcionalidades y datos sensibles.\n2.  **Gestión de Secretos:** La exposición de credenciales y API keys es una vulnerabilidad crítica. Se propone la implementación de una bóveda de secretos robusta para almacenar y gestionar de forma segura todas las credenciales y configuraciones sensibles, eliminando el riesgo de hardcoding.\n3.  **Protección de Datos:** Los datos sensibles de usuario, como las ubicaciones favoritas, deben ser cifrados tanto en reposo como en tránsito. Esto es fundamental para cumplir con las normativas de privacidad como GDPR.\n4.  **Vulnerabilidades Comunes:** Se han identificado riesgos potenciales como la falta de validación de entradas, la gestión débil de sesiones y la exposición de credenciales, ofreciendo mitigaciones proactivas.\n\n### Conclusión:\n\nLa implementación de estas medidas de seguridad desde las primeras etapas del desarrollo es vital. Un enfoque proactivo en IAM, gestión de secretos y protección de datos no solo protege la aplicación y a sus usuarios, sino que también reduce significativamente el riesgo de incidentes de seguridad a largo plazo. La aplicación de un análisis de vulnerabilidades estático (SAST) y dinámico (DAST) será esencial antes de cualquier pase a producción para validar estas implementaciones.",
         "todoMarkdown": "### Próximos Pasos de Seguridad:\n- **Implementar Matriz de Roles y Permisos (RBAC):** Desarrollar la lógica de autenticación y autorización siguiendo la matriz definida para 'Usuario Final' y 'Administrador'.\n- **Integrar Bóveda de Secretos:** Seleccionar e integrar una solución de gestión de secretos (ej. AWS Secrets Manager, Azure Key Vault, HashiCorp Vault) para todas las API Keys, credenciales de BD y otras configuraciones sensibles.\n- **Garantizar Cifrado de Datos:** Implementar cifrado en reposo para bases de datos (especialmente para ubicaciones favoritas y datos de perfil de usuario) y asegurar que todas las comunicaciones utilicen TLS/SSL.\n- **Desarrollar Estrategia de Validación de Entradas:** Implementar validación robusta de entradas en el frontend y backend para prevenir ataques de inyección (SQLi, XSS).\n- **Fortalecer Autenticación y Gestión de Sesiones:** Asegurar tokens de sesión seguros, expiración adecuada y considerar MFA para usuarios administrativos.\n- **Realizar Análisis de Seguridad (SAST/DAST):** Ejecutar herramientas de análisis de seguridad estático y dinámico en el código base para identificar y remediar vulnerabilidades antes del despliegue.\n- **Establecer Plan de Respuesta a Incidentes:** Documentar un plan claro sobre cómo manejar y responder a posibles incidentes de seguridad."
       },
-      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/4/pdf"
+      "pdfUrl": "/api/runs/0acc1172-c9fa-4e70-ad78-27aee7b6320b/steps/4/pdf",
+      "readConfirmed": true
     },
     {
       "step": 5,
