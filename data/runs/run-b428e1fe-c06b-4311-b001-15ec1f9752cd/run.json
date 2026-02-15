@@ -1,0 +1,50 @@
+{
+  "runId": "b428e1fe-c06b-4311-b001-15ec1f9752cd",
+  "tenantId": "default",
+  "mission": "crea una app de meteoritos ",
+  "createdAt": "2026-02-15T06:06:34.949Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina",
+      "lucas"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "agentId": "lucas",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
