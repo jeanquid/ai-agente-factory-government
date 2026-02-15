@@ -58,7 +58,40 @@
     {
       "step": 2,
       "agentId": "fabricio",
-      "status": "running"
+      "status": "in_review",
+      "finishedAt": "2026-02-15T05:36:03.952Z",
+      "deliverables": {
+        "outputJson": {
+          "databaseSchema": {
+            "name": "Meteorite Falls Database Schema",
+            "description": "Schema SQL para almacenar información detallada sobre la caída de meteoritos, optimizado para consultas geográficas.",
+            "sql": "-- Habilitar la extensión PostGIS para tipos de datos espaciales y funciones\n-- Se asume que PostGIS ya está instalado y configurado en la base de datos.\n-- CREATE EXTENSION IF NOT EXISTS postgis;\n\nCREATE TABLE meteorite_falls (\n    id SERIAL PRIMARY KEY,\n    tenant_id UUID, -- Opcional: Para multi-tenancy, si diferentes organizaciones gestionan sus propios datos\n    name VARCHAR(255) NOT NULL, -- Nombre del meteorito\n    mass_g NUMERIC(15, 6), -- Masa en gramos (puede ser muy grande o muy precisa)\n    fall_date DATE, -- Fecha de la caída\n    recclass VARCHAR(100), -- Clasificación del meteorito (ej. H5, L6)\n    nametype VARCHAR(50), -- Tipo de nombre (ej. 'Valid', 'Relict')\n    year INTEGER, -- Año de la caída (derivado de fall_date para filtrado fácil)\n    latitude NUMERIC(9, 6), -- Latitud del impacto\n    longitude NUMERIC(9, 6), -- Longitud del impacto\n    geolocation GEOGRAPHY(Point, 4326), -- Punto PostGIS para consultas espaciales (SRID 4326 para WGS 84)\n    original_source_id VARCHAR(255), -- ID de la fuente de datos original (ej. NASA, Meteoritical Society)\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);\n\n-- Índices para optimizar el rendimiento de las consultas\nCREATE INDEX idx_meteorite_falls_name ON meteorite_falls (name);\nCREATE INDEX idx_meteorite_falls_fall_date ON meteorite_falls (fall_date);\nCREATE INDEX idx_meteorite_falls_year ON meteorite_falls (year);\nCREATE INDEX idx_meteorite_falls_geolocation ON meteorite_falls USING GIST (geolocation); -- Índice GIST para consultas espaciales eficientes\nCREATE INDEX idx_meteorite_falls_tenant_id ON meteorite_falls (tenant_id) WHERE tenant_id IS NOT NULL;\n\n-- Función para actualizar automáticamente la columna 'updated_at'\nCREATE OR REPLACE FUNCTION update_updated_at_column()\nRETURNS TRIGGER AS $$\nBEGIN\n    NEW.updated_at = NOW();\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql;\n\nCREATE TRIGGER update_meteorite_falls_updated_at\nBEFORE UPDATE ON meteorite_falls\nFOR EACH ROW\nEXECUTE FUNCTION update_updated_at_column();"
+          },
+          "vectorizationStrategy": {
+            "status": "Not immediately required for core functionality",
+            "considerations": "Para la funcionalidad principal de 'saber dónde cayeron', los datos geográficos estructurados son suficientes. Sin embargo, si se incorporan descripciones textuales detalladas de los meteoritos, informes de impacto, o documentos de investigación asociados, se podría implementar una estrategia de vectorización (e.g., utilizando embeddings de texto) para búsquedas semánticas y RAG. Esto permitiría consultas como 'encuentra meteoritos con evidencia de fusión' o 'muéstrame impactos de condritas carbonáceas'."
+          },
+          "dataIngestionNotes": {
+            "sources": [
+              "Base de datos de la NASA (NASA Open Data)",
+              "The Meteoritical Bulletin Database (Meteoritical Society)",
+              "Otras bases de datos científicas y públicas"
+            ],
+            "pipeline_recommendation": "Se necesitará un pipeline de ETL (Extract, Transform, Load) para ingerir datos de las fuentes identificadas. Esto incluirá la normalización de los campos, la conversión de coordenadas a un formato compatible con PostGIS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)), y la gestión de duplicados."
+          },
+          "dataRetentionPolicy": {
+            "policy": "Por defecto, los datos históricos de caída de meteoritos se retendrán indefinidamente debido a su naturaleza histórica y científica. No se prevén eliminaciones automáticas a menos que se especifique una política de retención de datos explícita (TTL) para ciertos tipos de datos (e.g., logs de acceso, datos temporales de usuario)."
+          },
+          "qualityChecklistStatus": {
+            "has_tenant_id_consideration": true,
+            "vector_index_latency_addressed": "N/A para datos estructurados primarios; se abordará si se implementa vectorización.",
+            "audit_log_prompt_version": "Fuera del alcance directo del diseño de esquema de datos de meteoritos, pero se implementará en la capa de auditoría de interacciones de IA."
+          }
+        },
+        "summaryMarkdown": "## Diseño de Esquema de Datos para la Aplicación de Meteoritos\n\nComo Fabricio, he diseñado el esquema de base de datos SQL para la aplicación de meteoritos. El objetivo principal es almacenar y gestionar eficientemente la información sobre dónde cayeron los meteoritos, incluyendo su ubicación geográfica, fecha, masa y clasificación. Se ha priorizado el uso de PostGIS para permitir consultas espaciales robustas y eficientes.\n\nEl esquema propuesto (`meteorite_falls`) incluye campos clave como `name`, `mass_g`, `fall_date`, `recclass`, `latitude`, `longitude`, y un tipo de dato `GEOGRAPHY` para la ubicación. Se han añadido índices para optimizar el rendimiento de las búsquedas por nombre, fecha y ubicación. También se ha considerado un `tenant_id` opcional para futuras expansiones a un modelo multi-inquilino.\n\nAunque la estrategia de vectorización no es crítica para la funcionalidad inicial, se ha dejado abierta la posibilidad de integrarla para manejar datos no estructurados (descripciones, informes) en el futuro, mejorando la capacidad de búsqueda semántica. Se ha delineado la necesidad de un pipeline de ingestión de datos para poblar la base de datos desde fuentes externas como la NASA y la Meteoritical Society, y se ha propuesto una política de retención de datos indefinida para esta información histórica.",
+        "todoMarkdown": "### Próximos Pasos como Fabricio:\n- **1. Refinar Schema con Javier (The Brain):** Revisar el esquema propuesto con Javier para asegurar que cumple con todos los requisitos de negocio y funcionalidad de la aplicación.\n- **2. Identificar Fuentes de Datos Primarias:** Colaborar para confirmar las fuentes de datos más fiables y completas para la ingestión de datos de meteoritos.\n- **3. Planificar Pipeline de Ingestión de Datos:** Diseñar el proceso ETL detallado para extraer, transformar y cargar los datos de las fuentes externas a la base de datos `meteorite_falls`, incluyendo la lógica de normalización y manejo de duplicados.\n- **4. Configurar Entorno PostGIS:** Asegurar que la base de datos PostgreSQL esté configurada con la extensión PostGIS para soportar los tipos de datos geográficos y las funciones espaciales.\n- **5. Establecer Políticas de Backup y Recuperación:** Definir e implementar la estrategia de backups automáticos y planes de recuperación de desastres para la base de datos de meteoritos."
+      },
+      "pdfUrl": "/api/runs/fd9bcc3f-51a7-40fd-8eb2-442db2f7d01a/steps/2/pdf"
     },
     {
       "step": 3,
