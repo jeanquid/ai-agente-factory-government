@@ -119,6 +119,9 @@ const AgentSummaryCard: React.FC<{ agent: AgentProfile; onClick: () => void }> =
   } else if (agent.color === 'emerald') {
     themeClass = 'hover:border-emerald-500/50 hover:bg-emerald-900/5';
     buttonClass = 'text-emerald-400';
+  } else if (agent.color === 'cyan') {
+    themeClass = 'hover:border-cyan-500/50 hover:bg-cyan-900/5';
+    buttonClass = 'text-cyan-400';
   }
 
   return (
