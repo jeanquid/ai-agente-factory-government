@@ -115,11 +115,13 @@ export default async function handler(
       ${JSON.stringify(rulesToUse, null, 2)}
     `;
 
-        const modelName = 'gemini-2.5-flash';
+        const modelName = req.headers['x-ai-model'] as string || 'gemini-2.5-flash';
+        console.log(`[Generate Prompt] Using model: ${modelName}`);
+
         const model = genAI.getGenerativeModel({
             model: modelName,
             generationConfig: {
-                temperature: 0.7,
+                temperature: 0.1,
                 topP: 0.95,
                 topK: 40,
                 maxOutputTokens: 8192,

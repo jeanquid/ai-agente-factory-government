@@ -51,11 +51,15 @@ export const AgentOrchestration: React.FC = () => {
         setRunState(null);
         addLog('system', `${t('initializingFactory')} "${mission}"`, 'info');
 
+        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-2.5-flash';
         try {
             const res = await fetch('/api/runs/start', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mission }) // removed specific workflowOrder to us default
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-AI-Model': selectedModel
+                },
+                body: JSON.stringify({ mission })
             });
 
             if (!res.ok) {
@@ -86,9 +90,13 @@ export const AgentOrchestration: React.FC = () => {
             return { ...prev, steps: newSteps };
         });
 
+        const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-2.5-flash';
         try {
             const res = await fetch(`/api/runs/${runState.runId}/steps/${stepNum}/execute`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'X-AI-Model': selectedModel
+                }
             });
 
             if (!res.ok) {

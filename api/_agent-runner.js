@@ -6,32 +6,42 @@ import path from 'path';
 import archiver from 'archiver';
 import os from 'os';
 
-// Configuration: Updated for Senior Backend Requirements (2025-2026)
-const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+/**
+ * Detects the preferred model from request headers, env, or default.
+ */
+function getPrimaryModel(req) {
+    // 1. From request headers (Frontend selection)
+    const headerModel = req?.headers?.['x-ai-model'];
+    if (headerModel) return headerModel;
 
-// Conservative list likely to exist for generateContent
-const FALLBACK_MODELS = [
-    "gemini-2.5-pro",
-    "gemini-flash",
-    "gemini-pro",
-    "gemini-2.5-flash-lite"
-];
+    // 2. From environment
+    const envModel = process.env.GEMINI_MODEL;
+    if (envModel) return envModel;
+
+    // 3. Default
+    return "gemini-2.5-flash";
+}
 
 /**
- * Executes a prompt against Gemini with automatic fallback to secondary models
- * if the primary one returns a 404 (Not Found) error.
- * Includes senior-level error classification for 401, 403, 429.
+ * Executes a prompt against Gemini/Claude with automatic fallback.
  */
-async function generateWithFallback(genAI, systemPrompt) {
+async function generateWithFallback(genAI, systemPrompt, primaryModel) {
     const tryModel = async (modelName) => {
-        console.log(`[Gemini] Attempting generation with model: ${modelName}`);
+        console.log(`[IA Runner] Attempting generation with model: ${modelName}`);
+
+        // Claude support (Anthropic)
+        if (modelName.startsWith('claude-')) {
+            return await generateWithClaude(modelName, systemPrompt);
+        }
+
         const model = genAI.getGenerativeModel({
             model: modelName,
             generationConfig: {
-                temperature: 0.7,
+                temperature: 0.1,
                 topP: 0.95,
                 topK: 40,
                 maxOutputTokens: 8192,
+                responseMimeType: "application/json",
             }
         });
         const result = await model.generateContent(systemPrompt);
@@ -39,7 +49,15 @@ async function generateWithFallback(genAI, systemPrompt) {
         return response.text();
     };
 
-    const modelsToTry = Array.from(new Set([PRIMARY_MODEL, ...FALLBACK_MODELS]));
+    // Try primary model first, then standard fallbacks
+    const modelsToTry = Array.from(new Set([
+        primaryModel,
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+        "gemini-flash",
+        "gemini-pro"
+    ]));
+
     let lastError = null;
 
     for (const modelName of modelsToTry) {
@@ -52,46 +70,56 @@ async function generateWithFallback(genAI, systemPrompt) {
 
             // 1. Auth / Permissions / Region (401, 403)
             if (status === 401 || status === 403 || message.includes("401") || message.includes("403") || message.includes("API_KEY") || message.includes("permission")) {
-                console.error(`[Gemini] Authentication/Permission Error: ${message}`);
+                console.error(`[IA Runner] Authentication/Permission Error: ${message}`);
                 throw { ok: false, error: "API key / permissions / region error", details: message, status: 403 };
             }
 
             // 2. Quota / Rate Limit (429)
             if (status === 429 || message.includes("429") || message.includes("quota") || message.includes("limit")) {
-                console.error(`[Gemini] Quota/Rate Limit Error: ${message}`);
+                console.error(`[IA Runner] Quota/Rate Limit Error: ${message}`);
+                if (modelName === primaryModel) {
+                    console.warn(`[IA Runner] Primary model ${modelName} hit quota. Trying fallback...`);
+                    lastError = { model: modelName, message };
+                    continue; // Try next model in list
+                }
                 throw { ok: false, error: "Quota / rate limit error", details: message, status: 429 };
             }
 
             // 3. Not Found / Not Supported (404) -> Fallback
             if (status === 404 || message.includes("404") || message.includes("not found") || message.includes("not supported") || message.includes("Model not found")) {
-                console.warn(`[Gemini] Model '${modelName}' not found or unsupported. Trying next fallback...`);
+                console.warn(`[IA Runner] Model '${modelName}' not found. Trying next...`);
                 lastError = { model: modelName, message };
                 continue;
             }
 
             // 4. Other Errors
-            console.error(`[Gemini] Unexpected error with model ${modelName}:`, message);
+            console.error(`[IA Runner] Unexpected error with model ${modelName}:`, message);
+            if (modelName === primaryModel) {
+                lastError = { model: modelName, message };
+                continue;
+            }
             throw { ok: false, error: "Model execution failed", details: message, status: 500 };
         }
     }
 
-    // If we exhausted all models
     throw {
         ok: false,
-        error: "All models failed (Not Found / Unsupported)",
-        details: lastError ? `Last tried ${lastError.model}: ${lastError.message}` : "No fallbacks succeeded",
-        status: 404
+        error: "All models failed",
+        details: lastError ? `Last tried ${lastError.model}: ${lastError.message}` : "No models succeeded",
+        status: 500
     };
 }
 
-export async function executeAgent(agentId, runState, previousSteps) {
+export async function executeAgent(agentId, runState, previousSteps, req) {
     const agent = agents.find(a => a.id === agentId);
     if (!agent) throw new Error(`Agent ${agentId} not found`);
 
+    const primaryModel = getPrimaryModel(req);
+    console.log(`[Agent Runner] Executing ${agentId} with model: ${primaryModel}`);
+
     // SPECIAL HANDLING FOR LUCAS - CODE GENERATION
     if (agentId === 'lucas') {
-        console.log('[Lucas] 🏗️ Code generation agent detected');
-        return await executeLucasCodeGeneration(runState, previousSteps);
+        return await executeLucasCodeGeneration(runState, previousSteps, req);
     }
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -99,8 +127,7 @@ export async function executeAgent(agentId, runState, previousSteps) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Construct context
-    // Construct context
+    // Context from previous agents
     const context = previousSteps.map(step => ({
         agentId: step.agentId,
         role: agents.find(a => a.id === step.agentId)?.role,
@@ -122,88 +149,37 @@ ${JSON.stringify(context, null, 2)}
 YOUR AGENT PROFILE:
 ${JSON.stringify(agent, null, 2)}
 
-CRITICAL OUTPUT REQUIREMENTS - READ CAREFULLY:
-
-You MUST respond with ONLY a valid JSON object. Your response must:
-1. Start with { and end with }
-2. Contain NO text before or after the JSON
-3. Contain NO markdown code fences (no \`\`\`json or \`\`\`)
-4. Contain NO explanations or commentary
-5. Be valid, parseable JSON
-
-The JSON object MUST contain these three keys (all required):
-
+CRITICAL OUTPUT REQUIREMENTS:
+You MUST respond with a valid JSON object containing exactly these three keys:
 {
-  "outputJson": {
-    // Structured object with your work artifacts/data
-  },
-  "summaryMarkdown": "Executive summary in Markdown with ## headers",
-  "todoMarkdown": "Actionable steps:\\n- Item 1\\n- Item 2"
+  "outputJson": {},
+  "summaryMarkdown": "## Summary Content",
+  "todoMarkdown": "- Next step 1"
 }
-
-EXAMPLE VALID RESPONSE:
-{
-  "outputJson": {
-    "projectName": "Meteorite Tracker",
-    "features": ["Real-time tracking", "Historical data"],
-    "techStack": ["React", "Node.js"]
-  },
-  "summaryMarkdown": "## Analysis\\n\\nComprehensive meteorite tracking app plan.",
-  "todoMarkdown": "- Setup environment\\n- Create schema\\n- Build API"
-}
-
-Execute your role as ${agent.name} and respond with the JSON object.
 `;
 
     try {
-        // Execute with fallback logic
-        const text = await generateWithFallback(genAI, systemPrompt);
-
-        if (!text) throw new Error("No content generated from Gemini");
-
-        console.log(`[Agent Runner] Raw response from ${agentId}:`, text.substring(0, 500) + (text.length > 500 ? "..." : ""));
-
-        // Robust JSON extraction
-        let jsonText = text.trim();
-        const firstBrace = jsonText.indexOf('{');
-        const lastBrace = jsonText.lastIndexOf('}');
-
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-            jsonText = jsonText.substring(firstBrace, lastBrace + 1);
-        } else {
-            // Fallback: try removing markdown code blocks if the brace logic failed
-            jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
-        }
+        const text = await generateWithFallback(genAI, systemPrompt, primaryModel);
+        if (!text) throw new Error("No content generated from AI");
 
         let parsed;
         try {
-            parsed = JSON.parse(jsonText);
-        } catch (parseError) {
-            console.error("[Agent Runner] JSON Parse Error. Extracted text:", jsonText);
-            throw new Error(`Failed to parse agent response as JSON: ${parseError.message}`);
+            parsed = JSON.parse(text);
+        } catch (e) {
+            // Robust extraction if JSON mode failed for some reason
+            const firstBrace = text.indexOf('{');
+            const lastBrace = text.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                parsed = JSON.parse(text.substring(firstBrace, lastBrace + 1));
+            } else {
+                throw new Error("Failed to parse AI response as JSON");
+            }
         }
 
-        // Flexible Key Matching (Senior Backend Resilience)
-        // Some models might rename keys despite instructions
-        const getVal = (keys) => {
-            const foundKey = keys.find(k => typeof parsed[k] !== 'undefined');
-            return foundKey ? parsed[foundKey] : undefined;
-        };
-
-        const outputJson = getVal(['outputJson', 'output', 'artifacts', 'data', 'result']);
-        const summaryMarkdown = getVal(['summaryMarkdown', 'summary', 'executiveSummary', 'description']);
-        const todoMarkdown = getVal(['todoMarkdown', 'todo', 'todos', 'nextSteps', 'actionItems', 'risks']);
-
-        // Validation
-        if (typeof outputJson === 'undefined' || typeof summaryMarkdown === 'undefined' || typeof todoMarkdown === 'undefined') {
-            console.error("[Agent Runner] Validation Failed. Parsed keys:", Object.keys(parsed));
-            throw {
-                ok: false,
-                error: "Agent response format invalid",
-                details: "Response missing required fields (outputJson, summaryMarkdown, todoMarkdown). Found: " + Object.keys(parsed).join(', '),
-                status: 500
-            };
-        }
+        // Key matching normalization
+        const outputJson = parsed.outputJson || parsed.output || {};
+        const summaryMarkdown = parsed.summaryMarkdown || parsed.summary || "";
+        const todoMarkdown = parsed.todoMarkdown || parsed.todo || "";
 
         return {
             outputJson,
@@ -213,29 +189,19 @@ Execute your role as ${agent.name} and respond with the JSON object.
 
     } catch (error) {
         console.error(`[Agent Runner] Error executing agent ${agentId}:`, error);
-
-        // If it's already a structured error, rethrow it
         if (error.ok === false) throw error;
-
-        // Otherwise, wrap it
-        throw {
-            ok: false,
-            error: "Agent execution failed",
-            details: error.message || String(error),
-            status: 500
-        };
+        throw { ok: false, error: "Agent execution failed", details: error.message || String(error), status: 500 };
     }
 }
 
 /**
  * Lucas - The Builder
- * Generates executable code from specifications
  */
-async function executeLucasCodeGeneration(runState, previousSteps) {
+async function executeLucasCodeGeneration(runState, previousSteps, req) {
     console.log('[Lucas] 🚀 Starting project generation...');
+    const primaryModel = getPrimaryModel(req);
 
     try {
-        // 1. Consolidate outputs of previous agents
         const specs = {};
         for (const step of previousSteps) {
             if (step.deliverables) {
@@ -247,152 +213,62 @@ async function executeLucasCodeGeneration(runState, previousSteps) {
             }
         }
 
-        console.log('[Lucas] ✅ Specs consolidated from:', Object.keys(specs).join(', '));
-
-        // 2. Generate code
         const projectName = sanitizeProjectName(runState.mission);
-        console.log(`[Lucas] 📝 Generating project: ${projectName}...`);
-
-        const generatedProject = await generateProjectCode(specs, projectName);
-        console.log(`[Lucas] ✅ Generated ${Object.keys(generatedProject.files).length} files`);
-
-        // 3. Create physical files temporarily
+        const generatedProject = await generateProjectCode(specs, projectName, primaryModel);
         const projectPath = await createPhysicalProject(generatedProject, projectName);
-        console.log(`[Lucas] ✅ Project created at: ${projectPath}`);
 
-        // 4. Create ZIP
-        // We save it in a public/outputs folder so the frontend can serve it
-        const outputsDir = path.join(process.cwd(), 'public', 'outputs');
-        if (!fs.existsSync(outputsDir)) {
-            fs.mkdirSync(outputsDir, { recursive: true });
-        }
-
+        // Vercel /tmp redirection
+        const outputsDir = os.tmpdir();
         const zipPath = await createZipFile(projectPath, projectName, outputsDir);
-        console.log(`[Lucas] ✅ Project zipped: ${zipPath}`);
-
         const zipStats = fs.statSync(zipPath);
         const zipSizeMB = (zipStats.size / 1024 / 1024).toFixed(2);
         const zipFilename = path.basename(zipPath);
 
-        // 5. Return in standard format
         return {
             outputJson: {
                 projectName,
                 filesGenerated: Object.keys(generatedProject.files).length,
-                zipPath: zipPath,
-                zipSize: zipStats.size,
                 zipSizeMB,
-                structure: generatedProject.structure,
-                downloadUrl: `/outputs/${zipFilename}`,
+                downloadUrl: `/api/download?file=${zipFilename}`,
                 instructions: {
                     step1: "Download the ZIP file",
                     step2: "Unzip into your working directory",
-                    step3: "Read the README.md",
-                    step4: "Run: docker-compose up",
-                    step5: "Open http://localhost:3000"
+                    step3: "Run: docker-compose up"
                 }
             },
-            summaryMarkdown: `## 🎉 Code Generated Successfully
-
-**Project:** \`${projectName}\`  
-**Files:** ${Object.keys(generatedProject.files).length} files generated  
-**ZIP Size:** ${zipSizeMB} MB
-
-### 📦 Project Content:
-
-#### Frontend (Next.js + TypeScript)
-- ✅ React pages and components
-- ✅ API services
-- ✅ Tailwind CSS configuration
-
-#### Backend (Express + TypeScript)  
-- ✅ REST API with routes
-- ✅ Controllers and models
-- ✅ Authentication middleware
-
-#### Database (PostgreSQL)
-- ✅ SQL Schema implemented
-- ✅ Initial data seeds
-
-#### DevOps
-- ✅ Docker Compose setup
-- ✅ Environment variables configured
-- ✅ README with full instructions
-
-### 🚀 How to Use Your Project:
-
-1. **Download** the ZIP file
-2. **Unzip** on your computer
-3. **Read** the complete \`README.md\`
-4. **Install Docker** if you don't have it installed
-5. **Run:** \`docker-compose up\`
-6. **Open** http://localhost:3000 in your browser
-
-Your application will be running locally in minutes! 🚀`,
-
-            todoMarkdown: `- [ ] **Download** the project ZIP file (${zipSizeMB} MB)
-- [ ] **Unzip** into your working directory
-- [ ] **Read** the complete \`README.md\`
-- [ ] **Verify** that you have Docker installed
-- [ ] **Run** \`docker-compose up\` in the project root
-- [ ] **Open** http://localhost:3000 in your browser
-- [ ] **Explore** the source code
-- [ ] **Customize** components according to your brand
-- [ ] **Configure** environment variables for production
-- [ ] **Test** all main functionalities
-- [ ] **Deploy** to your preferred platform
-- [ ] **Share** your new app with users! 🎉`
+            summaryMarkdown: `## 🎉 Code Generated Successfully\n\n**Project:** \`${projectName}\`\n**Files:** ${Object.keys(generatedProject.files).length}\n**Size:** ${zipSizeMB} MB`,
+            todoMarkdown: `- [ ] Download zip\n- [ ] Unzip\n- [ ] Run docker-compose up`
         };
 
     } catch (error) {
         console.error('[Lucas] ❌ Error during code generation:', error);
-        throw new Error(`Code generation failed: ${error.message}`);
+        throw { ok: false, error: "Code generation failed", details: error.message, status: 500 };
     }
 }
 
 /**
- * Helper: Sanitize project name
+ * Helpers
  */
 function sanitizeProjectName(mission) {
-    return mission
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        .substring(0, 50) || 'generated-app';
+    return mission.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50) || 'generated-app';
 }
 
-/**
- * Helper: Create physical project files
- */
 async function createPhysicalProject(generatedProject, projectName) {
     const timestamp = Date.now();
     const tempDir = os.tmpdir();
     const projectDir = path.join(tempDir, `factory-gen-${projectName}-${timestamp}`);
 
-    console.log(`[Lucas] Creating project directory: ${projectDir}`);
+    if (!fs.existsSync(projectDir)) fs.mkdirSync(projectDir, { recursive: true });
 
-    if (!fs.existsSync(projectDir)) {
-        fs.mkdirSync(projectDir, { recursive: true });
-    }
-
-    // Create all files
     for (const [filePath, content] of Object.entries(generatedProject.files)) {
         const fullPath = path.join(projectDir, filePath);
         const dir = path.dirname(fullPath);
-
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(fullPath, content, 'utf8');
     }
-
     return projectDir;
 }
 
-/**
- * Helper: Create ZIP file
- */
 async function createZipFile(projectPath, projectName, outputsDir) {
     const timestamp = Date.now();
     const zipName = `${projectName}-${timestamp}.zip`;
@@ -400,23 +276,41 @@ async function createZipFile(projectPath, projectName, outputsDir) {
 
     return new Promise((resolve, reject) => {
         const output = fs.createWriteStream(zipPath);
-        const archive = archiver('zip', {
-            zlib: { level: 9 } // Maximum compression
-        });
-
-        output.on('close', () => {
-            const sizeKB = (archive.pointer() / 1024).toFixed(2);
-            console.log(`[Lucas] ZIP created: ${sizeKB} KB total`);
-            resolve(zipPath);
-        });
-
-        archive.on('error', (err) => {
-            console.error('[Lucas] ZIP error:', err);
-            reject(err);
-        });
-
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        output.on('close', () => resolve(zipPath));
+        archive.on('error', (err) => reject(err));
         archive.pipe(output);
         archive.directory(projectPath, false);
         archive.finalize();
     });
+}
+
+/**
+ * Support for Claude (Anthropic)
+ */
+async function generateWithClaude(modelId, systemPrompt) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured');
+
+    console.log(`[Claude] Generating with model: ${modelId}`);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+            model: modelId,
+            max_tokens: 4096,
+            system: "You are a specialized AI agent. Response MUST be valid JSON.",
+            messages: [{ role: 'user', content: systemPrompt }]
+        })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(`Claude API error: ${data.error?.message || 'Unknown error'}`);
+
+    return data.content[0].text;
 }

@@ -79,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Execute Agent
         console.log(`[Execute] Run ${runId} Step ${stepNum} (${currentStep.agentId})...`);
-        const result = await executeAgent(currentStep.agentId, runState, context);
+        const result = await executeAgent(currentStep.agentId, runState, context, req);
 
         // Save Result
         const updatedRun = await updateRun(runId as string, (run) => {

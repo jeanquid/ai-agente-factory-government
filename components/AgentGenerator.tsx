@@ -19,10 +19,12 @@ export const AgentGenerator: React.FC<AgentGeneratorProps> = ({ agent }) => {
     setIsLoading(true);
     setError(null);
     try {
+      const selectedModel = localStorage.getItem('selected_ai_model') || 'gemini-2.5-flash';
       const response = await fetch('/api/generate-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-AI-Model': selectedModel
         },
         body: JSON.stringify({
           agentId: agent.id,

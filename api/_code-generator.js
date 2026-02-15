@@ -8,7 +8,7 @@ import { join, dirname } from 'path';
  * Generates functional code from the specifications provided by other agents.
  */
 
-export async function generateProjectCode(specs, projectName = 'generated-app') {
+export async function generateProjectCode(specs, projectName = 'generated-app', primaryModel = 'gemini-2.5-flash') {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
 
@@ -64,7 +64,7 @@ export async function generateProjectCode(specs, projectName = 'generated-app') 
     for (const file of filesToGenerate) {
         console.log(`[Lucas] Generating ${file.path}...`);
 
-        const content = await generateFileContent(genAI, file, consolidatedSpecs, projectName);
+        const content = await generateFileContent(genAI, file, consolidatedSpecs, projectName, primaryModel);
         generatedFiles[file.path] = content;
     }
 
@@ -77,14 +77,15 @@ export async function generateProjectCode(specs, projectName = 'generated-app') 
     };
 }
 
-async function generateFileContent(genAI, file, specs, projectName) {
+async function generateFileContent(genAI, file, specs, projectName, modelId) {
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: modelId,
         generationConfig: {
-            temperature: 0.2, // Low for consistent code generation
+            temperature: 0.1, // Low for consistent code generation
             topP: 0.95,
             topK: 40,
-            maxOutputTokens: 4096,
+            maxOutputTokens: 8192,
+            responseMimeType: "text/plain", // Keep text/plain for raw code files, but lower temp
         }
     });
 
