@@ -1,0 +1,50 @@
+{
+  "runId": "0acc1172-c9fa-4e70-ad78-27aee7b6320b",
+  "tenantId": "default",
+  "mission": "crea una app meteoreologica",
+  "createdAt": "2026-02-15T13:32:29.695Z",
+  "workflow": {
+    "order": [
+      "javier",
+      "fabricio",
+      "martin",
+      "damian",
+      "agustina",
+      "lucas"
+    ],
+    "currentStep": 0
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agentId": "javier",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "agentId": "fabricio",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "agentId": "martin",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "agentId": "damian",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "agentId": "agustina",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "agentId": "lucas",
+      "status": "pending"
+    }
+  ],
+  "artifacts": []
+}
