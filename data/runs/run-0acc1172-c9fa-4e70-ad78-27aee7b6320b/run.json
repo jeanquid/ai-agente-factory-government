@@ -523,7 +523,7 @@
     {
       "step": 6,
       "agentId": "lucas",
-      "status": "pending"
+      "status": "running"
     }
   ],
   "artifacts": []
