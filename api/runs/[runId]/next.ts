@@ -2,7 +2,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 // @ts-ignore
 import { findRunFolder, downloadTextFile, uploadOrUpdateTextFile, findFileByName, findOrCreateFolder } from '../../_github-storage.js';
-import { RunState, RunStep } from '../../_types';
+import { RunState, RunStep } from '../../_types.js';
 // @ts-ignore
 import { executeAgent } from '../../_agent-runner.js';
 
