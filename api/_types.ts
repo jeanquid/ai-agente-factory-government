@@ -20,7 +20,7 @@ export interface AgentProfile {
     startupQuestions: string[];
     phase1Tasks: string[];
     color: string;
-    iconName: 'Brain' | 'Database' | 'Workflow' | 'Shield' | 'Megaphone';
+    iconName: 'Brain' | 'Database' | 'Workflow' | 'Shield' | 'Megaphone' | 'Code';
 }
 
 export interface GovernanceRule {

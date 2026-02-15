@@ -14,6 +14,7 @@ import {
     Workflow,
     Shield,
     Megaphone,
+    Code,
     ArrowRight
 } from 'lucide-react';
 
@@ -138,6 +139,7 @@ export const AgentOrchestration: React.FC = () => {
             case 'Workflow': return <Workflow size={size} />;
             case 'Shield': return <Shield size={size} />;
             case 'Megaphone': return <Megaphone size={size} />;
+            case 'Code': return <Code size={size} />;
             default: return <Brain size={size} />;
         }
     };
